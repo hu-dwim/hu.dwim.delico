@@ -31,33 +31,36 @@
 
 ; for emacs:  (setf (get 'defmethod/cc 'common-lisp-indent-function) 'lisp-indent-defmethod)
 
-(defmacro defmethod/cc (name &rest args)
-  (let ((qlist (when (and (symbolp (car args))
-                          (not (null (car args))))
-                 (list (pop args)))))
-    (let ((arguments (car args))
-          (body (cdr args)))
+(defmacro defmethod/cc (&whole whole name &rest args)
+  (let ((qualifiers (list (if (and (symbolp (first args))
+                                   (not (null (first args))))
+                              (pop args)
+                              :primary))))
+    (bind ((arguments (car args))
+           (body (cdr args))
+           ((:values body declarations documentation) (parse-body body :documentation #t :whole whole)))
       `(progn
          (unless (eq 'defmethod/cc (second (multiple-value-list (fdefinition/cc ',name))))
            (setf (fdefinition/cc ',name 'defmethod/cc) t)
            (defgeneric/cc ,name ,(if arguments
                                      (convert-to-generic-lambda-list arguments)
                                      '())))
-         (defmethod ,name ,@qlist ,arguments
+         (defmethod ,name ,@qualifiers ,arguments
+           ,@(when documentation
+               (list documentation))
            ;; the walked code will not reference the arguments because this defmethod will be used
            ;; as a colsure/cc factory, so make them all ignored.
            ,(when arguments
              `(declare (ignore ,@(extract-argument-names arguments :allow-specializers t))))
-           ;; TODO use parse-body
-           ,@(when (stringp (first body))
-              (list (pop body)))
            (make-instance 'closure/cc
-                          ;; TODO why is it walking at runtime?
                           ;; TODO lexenv is ignored
-                          :code (walk-form '(lambda ,(clean-argument-list arguments)
-                                              (block ,name
-                                                (locally ,@body)))
-                                           nil (make-walkenv))
+                          ;; TODO make sure that the compile-time walked forms are not modified anywhere
+                          :code ,(walk-form `(lambda ,(clean-argument-list arguments)
+                                               (block ,name
+                                                 (locally
+                                                     ,@declarations
+                                                   ,@body)))
+                                            nil (make-walkenv))
 			  :env nil))))))
 
 ;;;; CC-STANDARD (standard-combination for cc methods)

@@ -94,7 +94,7 @@ semantics."
          (primary-value-p (funcall k primary-value))
          (t (funcall k nil)))))))
 
-(defvar *cc-functions* (make-hash-table :test 'eql))
+(defvar *cc-functions* (make-hash-table :test 'eq))
 
 (def (function e) fmkunbound/cc (function-name)
   (remhash function-name *cc-functions*))
