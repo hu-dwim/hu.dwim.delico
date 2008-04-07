@@ -44,25 +44,25 @@
                           (not (null (car args))))
                  (list (pop args)))))
     (let ((arguments (car args))
-	  (body (cdr args)))
+          (body (cdr args)))
       `(progn
-	 (unless (eq 'defmethod/cc (second (multiple-value-list (fdefinition/cc ',name))))
+         (unless (eq 'defmethod/cc (second (multiple-value-list (fdefinition/cc ',name))))
            (setf (fdefinition/cc ',name 'defmethod/cc) t)
            (defgeneric/cc ,name ,(if arguments
                                      (convert-to-generic-lambda-list arguments)
                                      '())))
-	 (defmethod ,name ,@qlist ,arguments
+         (defmethod ,name ,@qlist ,arguments
            ;; the walked code will not reference the arguments because this defmethod will be used
            ;; as a colsure/cc factory, so make them all ignored.
            ,(when arguments
-	     `(declare (ignore ,@(extract-argument-names arguments :allow-specializers t))))
+             `(declare (ignore ,@(extract-argument-names arguments :allow-specializers t))))
            ;; TODO use parse-body
-	   ,@(when (stringp (first body))
+           ,@(when (stringp (first body))
               (list (pop body)))
-	   (make-instance 'closure/cc
+           (make-instance 'closure/cc
                           ;; TODO why is it walking at runtime?
                           ;; TODO lexenv is ignored
-			  :code (walk-form '(lambda ,(clean-argument-list arguments)
+                          :code (walk-form '(lambda ,(clean-argument-list arguments)
                                               (block ,name
                                                 (locally ,@body)))
                                            nil (make-walkenv))
