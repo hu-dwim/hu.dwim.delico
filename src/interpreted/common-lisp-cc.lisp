@@ -1,6 +1,6 @@
 ;; -*- lisp -*-
 
-(in-package :it.bese.arnesi)
+(in-package :cl-delico)
 
 ;;;; ** CC Version of some common lisp functions.
 
@@ -8,7 +8,8 @@
   `(progn
      (setf (fdefinition/cc ',name)
            (make-instance 'closure/cc
-                          :code (walk-form '(lambda ,args ,@body) nil '())
+                          :code (walk-form '(lambda ,args
+                                             (block ,name ,@body)))
                           :env '()))
      ',name))
 
@@ -333,7 +334,7 @@
 	(result (list nil))
 	(splice result))
       ((member nil lists) (cdr result))
-    (setq splice (cdr (rplacd splice (list (apply function lists)))))    
+    (setq splice (cdr (rplacd splice (list (apply function lists)))))
     (do ((l lists (cdr l)))
 	((endp l))
       (rplaca l (cdar l)))))
@@ -381,7 +382,7 @@
        (setf (fill-pointer vector) i)
        vector)
       ((adjustable-array-p vector) (adjust-array vector i))
-      (t (subseq vector 0 i))))) 
+      (t (subseq vector 0 i)))))
 
 (redefun/cc delete-if (predicate sequence &key from-end (start 0) end count key)
   "Modify SEQUENCE by deleting elements satisfying PREDICATE."
@@ -424,33 +425,3 @@
   "Return a copy of SEQUENCE with elements not satisfying PREDICATE removed."
   (remove-if (complement predicate) sequence :from-end from-end
 	     :start start :end end :count count :key key))
-
-;; Copyright (c) 2002-2006, Edward Marco Baringer
-;; All rights reserved. 
-;; 
-;; Redistribution and use in source and binary forms, with or without
-;; modification, are permitted provided that the following conditions are
-;; met:
-;; 
-;;  - Redistributions of source code must retain the above copyright
-;;    notice, this list of conditions and the following disclaimer.
-;; 
-;;  - Redistributions in binary form must reproduce the above copyright
-;;    notice, this list of conditions and the following disclaimer in the
-;;    documentation and/or other materials provided with the distribution.
-;;
-;;  - Neither the name of Edward Marco Baringer, nor BESE, nor the names
-;;    of its contributors may be used to endorse or promote products
-;;    derived from this software without specific prior written permission.
-;; 
-;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-;; "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-;; LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-;; A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT
-;; OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-;; SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-;; LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-;; DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-;; THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-;; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-;; OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.

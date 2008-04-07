@@ -4,7 +4,7 @@
 ;;;
 ;;; See COPYING for details.
 
-(in-package :cl-walker)
+(in-package :cl-delico)
 
 (defmacro if-bind (var test &body then/else)
   (assert (first then/else)
@@ -32,7 +32,6 @@
 (defmacro aprog1 (ret &body body)
   `(prog1-bind it ,ret ,@body))
 
-
 ;; from arnesi
 (defmacro dolist* ((iterator list &optional return-value) &body body)
   "Like DOLIST but destructuring-binds the elements of LIST.
@@ -48,114 +47,60 @@ that it creates a fresh binding."
          (let ((,iterator ,iterator))
            ,@body))))
 
-;; from stefil
-(define-condition illegal-lambda-list (error)
-  ((lambda-list :accessor lambda-list-of :initarg :lambda-list)))
 
-(defun illegal-lambda-list (lambda-list)
-  (error 'illegal-lambda-list :lambda-list lambda-list))
 
-(defun parse-lambda-list (lambda-list visitor &key macro)
-  (declare (optimize (speed 3))
-           (type list lambda-list)
-           (type (or symbol function) visitor))
-  (let ((args lambda-list))
-    (labels
-        ((fail ()
-           (illegal-lambda-list lambda-list))
-         (ensure-list (list)
-           (if (listp list)
-               list
-               (list list)))
-         (process-&whole ()
-           (assert (eq (first args) '&whole))
-           (pop args)
-           (unless macro
-             (fail))
-           (let ((whole (pop args)))
-             (unless whole
-               (fail))
-             (funcall visitor '&whole whole whole))
-           (case (first args)
-             (&key          (entering-&key))
-             (&rest         (process-&rest))
-             (&optional     (entering-&optional))
-             ((&whole &aux &allow-other-keys) (fail))
-             (t             (process-required))))
-         (process-required ()
-           (unless args
-             (done))
-           (case (first args)
-             (&key          (entering-&key))
-             (&rest         (process-&rest))
-             (&optional     (entering-&optional))
-             ((&whole &allow-other-keys) (fail))
-             (&aux          (entering-&aux))
-             (t
-              (let ((arg (pop args)))
-                (funcall visitor nil arg arg))
-              (process-required))))
-         (process-&rest ()
-           (assert (eq (first args) '&rest))
-           (pop args)
-           (let ((rest (pop args)))
-             (unless rest
-               (fail))
-             (funcall visitor '&rest rest rest))
-           (unless args
-             (done))
-           (case (first args)
-             (&key               (entering-&key))
-             ((&whole &optional &rest &allow-other-keys) (fail))
-             (&aux               (entering-&aux))
-             (t                  (fail))))
-         (entering-&optional ()
-           (assert (eq (first args) '&optional))
-           (pop args)
-           (process-&optional))
-         (process-&optional ()
-           (unless args
-             (done))
-           (case (first args)
-             (&key               (entering-&key))
-             (&rest              (process-&rest))
-             ((&whole &optional &allow-other-keys) (fail))
-             (&aux               (entering-&aux))
-             (t
-              (let ((arg (ensure-list (pop args))))
-                (funcall visitor '&optional (first arg) arg))
-              (process-&optional))))
-         (entering-&key ()
-           (assert (eq (first args) '&key))
-           (pop args)
-           (process-&key))
-         (process-&key ()
-           (unless args
-             (done))
-           (case (first args)
-             (&allow-other-keys       (funcall visitor '&allow-other-keys nil nil))
-             ((&key &optional &whole) (fail))
-             (&aux                    (entering-&aux))
-             (t
-              (let ((arg (ensure-list (pop args))))
-                (funcall visitor '&key (first arg) arg))
-              (process-&key))))
-         (entering-&aux ()
-           (assert (eq (first args) '&aux))
-           (pop args)
-           (process-&aux))
-         (process-&aux ()
-           (unless args
-             (done))
-           (case (first args)
-             ((&whole &optional &key &allow-other-keys &aux) (fail))
-             (t
-              (let ((arg (ensure-list (pop args))))
-                (funcall visitor '&aux (first arg) arg))
-              (process-&aux))))
-         (done ()
-           (return-from parse-lambda-list (values))))
-      (when args
-        (case (first args)
-          (&whole (process-&whole))
-          (t      (process-required)))))))
+;; from arnesi
+;; TODO delme, use the stefil lambda walker
+(defun extract-argument-names (lambda-list &key allow-specializers)
+  "Returns a list of symbols representing the names of the
+  variables bound by the lambda list LAMBDA-LIST."
+  (mapcan (lambda (argument)
+	    (let ((vars '()))
+	      (dolist (slot-name '(cl-walker::name cl-walker::supplied-p-parameter))
+		(awhen (and (slot-exists-p argument slot-name)
+			    (slot-boundp   argument slot-name)
+			    (slot-value    argument slot-name))
+		  (push it vars)))
+	      (nreverse vars)))
+	  (walk-lambda-list lambda-list nil (make-walkenv) :allow-specializers allow-specializers)))
+
+(defun convert-to-generic-lambda-list (defmethod-lambda-list)
+  (loop
+     with generic-lambda-list = '()
+     for arg in (walk-lambda-list defmethod-lambda-list
+                                  nil (make-walkenv)
+                                  :allow-specializers t)
+     do (etypecase arg
+          ((or required-function-argument-form
+               specialized-function-argument-form)
+           (push (name-of arg) generic-lambda-list))
+          (keyword-function-argument-form
+           (pushnew '&key generic-lambda-list)
+           (aif (keyword-name-of arg)
+                (push (list (list it (name-of arg)))
+                      generic-lambda-list)
+                (push (list (name-of arg)) generic-lambda-list)))
+          (rest-function-argument-form
+           (push '&rest generic-lambda-list)
+           (push (name-of arg) generic-lambda-list))
+          (optional-function-argument-form
+           (pushnew '&optional generic-lambda-list)
+           (push (name-of arg) generic-lambda-list))
+          (allow-other-keys-function-argument-form
+           (unless (member '&key generic-lambda-list)
+             (push '&key generic-lambda-list))
+           (push '&allow-other-keys generic-lambda-list)))
+     finally (return (nreverse generic-lambda-list))))
+
+(defun clean-argument-list (lambda-list)
+  (loop
+     for head on lambda-list
+     for argument = (car head)
+     if (member argument '(&optional &key &rest &allow-other-keys))
+       return (append cleaned head)
+     else
+       collect (if (listp argument)
+                   (first argument)
+                   argument)
+       into cleaned
+     finally (return cleaned)))

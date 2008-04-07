@@ -1,6 +1,6 @@
 ;;;; -*- lisp -*-
 
-(in-package :it.bese.arnesi)
+(in-package :cl-delico)
 
 ;;;; * A Common Lisp interpreter with support for continuations.
 
@@ -14,11 +14,40 @@
 ;;;; represent continuations as regular lists which, when the cdr
 ;;;; (which must be clos objects or literals) is applied to the car
 ;;;; (which must be a symbol) the actual contiunation (a regular
-;;;; common lisp function) is returned. 
+;;;; common lisp function) is returned.
 
 (defvar *call/cc-returns* nil)
 
-(defmacro with-call/cc (&environment e &body body)
+(defun lookup (environment type name &key (error-p nil) (default-value nil))
+  (loop
+     for (.type .name . data) in environment
+     when (and (eql .type type) (eql .name name))
+       return (values data t)
+     finally
+       (if error-p
+           (error "Sorry, No value for ~S of type ~S in environment ~S found."
+                  name type environment)
+           (values default-value nil))))
+
+(defun (setf lookup) (value environment type name &key (error-p nil))
+  (loop
+     for env-piece in environment
+     when (and (eql (first env-piece)  type)
+               (eql (second env-piece) name))
+       do (setf (cddr env-piece) value) and
+       return value
+     finally
+       (when error-p
+         (error "Sorry, No value for ~S of type ~S in environment ~S found."
+                name type environment))))
+
+(defun register (environment type name datum &rest other-datum)
+  (cons (if other-datum
+            (list* type name datum other-datum)
+            (list* type name datum))
+        environment))
+
+(defmacro with-call/cc (&environment lexenv &body body)
   "Execute BODY with delimited partial continuations.
 
   Within the code of BODY almost all common lisp forms maintain
@@ -28,12 +57,12 @@
   (call/cc LAMBDA) - LAMBDA, a one argument function, will be
   passed a continuation. This object may then be passed to the
   function KALL which will cause execution to resume around the
-  call/cc form. "
-  (let ((walk-env (make-walk-env e))
+  call/cc form."
+  (let ((walkenv (make-walkenv lexenv))
         (evaluate-env nil))
-    (dolist* ((type name &rest data) (car walk-env))
+    (dolist* ((type name &rest data) (car walkenv))
       (declare (ignore data))
-      (when (eql :lexical-let type)
+      (when (eql :unwalked-variable type)
         (push (list 'list
                     :lexical-let
                     `(quote ,name)
@@ -50,7 +79,7 @@
       (evaluate/cc ,(walk-form (if (rest body)
                                    `(progn ,@body)
                                    (first body))
-                               nil walk-env)
+                               nil walkenv)
                    ,evaluate-env nil
                    *toplevel-k*))))
 
@@ -116,6 +145,7 @@ form being evaluated.")
           (lambda ()
             ,@body)))))
 
+;; TODO use a proper logging lib
 (defvar *trace-cc* nil
   "Variable which controls the tracing of WITH-CALL/CC code.
 
@@ -124,7 +154,7 @@ evaluating and what it returns.")
 
 (defmacro trace-statement (format-control &rest format-args)
   `(when *trace-cc*
-     (format *trace-output* ,(strcat "~&" format-control "~%") ,@format-args)))
+     (format *trace-output* ,(concatenate 'string "~&" format-control "~%") ,@format-args)))
 
 (defun kontinue (k &optional (primary-value nil primary-value-p) &rest other-values)
   (trace-statement "Got ~S~{; ~S~}" primary-value other-values)
@@ -150,7 +180,7 @@ evaluating and what it returns.")
 
 (defmethod evaluate/cc :around ((form form) lex-env dyn-env k)
   (declare (ignore lex-env dyn-env k))
-  (trace-statement "Evaluating ~S." (source form))
+  (trace-statement "Evaluating ~S." (source-of form))
   (call-next-method))
 
 (defun print-debug-step (form lex-env dyn-env k)
@@ -174,33 +204,3 @@ evaluating and what it returns.")
     (throw 'done (values-list (cons value other-values)))))
 
 (defparameter *toplevel-k* '(toplevel-k))
-
-;; Copyright (c) 2002-2006, Edward Marco Baringer
-;; All rights reserved. 
-;; 
-;; Redistribution and use in source and binary forms, with or without
-;; modification, are permitted provided that the following conditions are
-;; met:
-;; 
-;;  - Redistributions of source code must retain the above copyright
-;;    notice, this list of conditions and the following disclaimer.
-;; 
-;;  - Redistributions in binary form must reproduce the above copyright
-;;    notice, this list of conditions and the following disclaimer in the
-;;    documentation and/or other materials provided with the distribution.
-;;
-;;  - Neither the name of Edward Marco Baringer, nor BESE, nor the names
-;;    of its contributors may be used to endorse or promote products
-;;    derived from this software without specific prior written permission.
-;; 
-;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-;; "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-;; LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-;; A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT
-;; OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-;; SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-;; LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-;; DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-;; THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-;; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-;; OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.

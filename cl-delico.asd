@@ -14,7 +14,13 @@
 (in-package #:cl-delico.system)
 
 (defsystem :cl-delico
-  :depends-on (:alexandria)
+  :depends-on (:alexandria
+               :metabang-bind
+               :cl-def
+               :cl-walker
+               :cl-syntax-sugar
+               :closer-mop
+               )
   :components ((:static-file "cl-delico.asd")
                (:module "src"
                 :components ((:file "package")
@@ -28,11 +34,23 @@
                                                    (:file "generic-functions")
                                                    (:file "common-lisp-cc")))))))
 
+(defclass delico-test-system (system)
+  ())
+
 (defsystem :cl-delico-test
-  :depends-on (:cl-delico :stefil :alexandria :metabang-bind)
+  :class delico-test-system
+  :depends-on (:cl-delico ; and all its dependencies
+               :stefil
+               )
   :components ((:module "tests"
                         :components ((:file "package")
                                      (:file "interpreted" :depends-on ("package"))))))
+
+(defmethod asdf:perform :around ((op operation) (system delico-test-system))
+  (progv
+      (list (read-from-string "cl-delico:*call/cc-returns*"))
+      (list nil)
+    (call-next-method)))
 
 (defmethod perform ((op asdf:test-op) (system (eql (find-system :cl-delico))))
   (asdf:oos 'asdf:load-op :cl-delico-test)

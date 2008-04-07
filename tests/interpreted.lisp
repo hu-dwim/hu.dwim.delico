@@ -1,37 +1,29 @@
 ;;;; -*- lisp -*-
 
-(in-package :it.bese.arnesi.test)
+(in-package :cl-delico-test)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (def-suite :it.bese.arnesi.call/cc :in :it.bese.arnesi))
+(defsuite* (test/interpreted :in test))
 
-(in-suite :it.bese.arnesi.call/cc)
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (setf *call/cc-returns* nil))
-
-(test call/cc-constant
+(deftest test/interpreted/constant ()
   (is (= 4 (with-call/cc 4)))
   (is (eql :a (with-call/cc :a)))
   (is (eql 'a (with-call/cc 'a)))
   (is (eql #'+ (with-call/cc #'+))))
 
-(test call/cc-progn
+(deftest test/interpreted/progn ()
   (is (null (with-call/cc)))
   (is (= 1 (with-call/cc 1)))
   (is (= 2 (with-call/cc 1 2)))
-  (is (= 3 (with-call/cc 1 2 3)))
-  (is (= 4 (with-call/cc 1 2 3 4))))
-
-(test call/cc-progn/cc
   (is (= 1 (kall (with-call/cc (let/cc k k) 1))))
-  (is (= 1 (kall (with-call/cc (let/cc k k) 0 1)))))
+  (is (= 2 (kall (with-call/cc (let/cc k k) 1 2)))))
 
-(test call/cc-let
+(deftest test/interpreted/let ()
   (is (= 1 (with-call/cc
-	    (let () 1))))
+	    (let ()
+              1))))
   (is (= 1 (with-call/cc
-	    (let ((a 1)) a))))
+	    (let ((a 1))
+              a))))
   (is (= 1 (with-call/cc
              (let ((a 1))
                (let ((a nil)
@@ -52,20 +44,22 @@
     (is (= 9 (kall cont 5)))
     (is (= 12 (kall cont 8)))))
 
-(test call/cc-let/cc
+(deftest test/interpreted/let-in-cc ()
   (let ((k (with-call/cc
-             (let ((a (arnesi::retk)))
+             (let ((a (retk)))
                (+ a 1)))))
-  (is (= 1 (arnesi::kall k 0)))
-  (is (= 2 (arnesi::kall k 1)))))
+    (is (= 1 (kall k 0)))
+    (is (= 2 (kall k 1)))))
 
-(test call/cc-setq
+(deftest test/interpreted/setq ()
   (is (= 1 (with-call/cc
-             (let ((a nil)) (setq a 1)))))
+             (let ((a nil))
+               (setq a 1)))))
   (is (= 2 (with-call/cc
-             (let ((a 1)) (setq a (1+ a)))))))
+             (let ((a 1))
+               (setq a (1+ a)))))))
 
-(test call/cc-let*
+(deftest test/interpreted/let* ()
   (with-call/cc
     (let* ((a 1)
 	   (b a))
@@ -82,51 +76,56 @@
        (setq a 47)
        (is (= a 47))))))
 
-(test call/cc-apply
+(deftest test/interpreted/apply ()
   (is (= 0 (with-call/cc (+))))
   (is (= 1 (with-call/cc (+ 1))))
   (is (= 2 (with-call/cc (+ 1 1))))
   (is (= 3 (with-call/cc (+ 1 (+ 1 (+ 1 (+))))))))
 
-(test call/cc-if
+(deftest test/interpreted/if ()
   (is (= 1 (with-call/cc (if t 1))))
   (is (= 1 (with-call/cc (if nil 0 1))))
   (is (null (with-call/cc (if nil 1)))))
 
-(test call/cc-block/return-from
+(deftest test/interpreted/block/return-from ()
   (is (= 1
          (with-call/cc
            (block foo
                nil
                (return-from foo 1)
                nil))))
-  (is (eql t 
+  (is (eql t
            (with-call/cc
                (block foo
                  (return-from foo t)
                  nil)))))
 
 (defun reached-unreachable-code ()
-  (fail "Somehow we reached unreachable code in a tagbody."))
+  (is nil "Somehow we reached unreachable code in a tagbody!"))
 
-(test call/cc-tagbody
+(deftest test/interpreted/tagbody ()
   (with-call/cc
-    (tagbody
-       (go a)
-       (reached-unreachable-code)
+    (finishes
+      (tagbody
+         (go a)
+         (reached-unreachable-code)
        a
-       (pass)))
+         (pass))))
   (with-call/cc
-    (tagbody
-       (go a) (reached-unreachable-code)
-     b
-       (pass)
-       (go c) (reached-unreachable-code)
-     a
-       (pass)
-       (go b) (reached-unreachable-code)
-     c
-       (pass)))
+    (finishes
+      (tagbody
+         (go a)
+         (reached-unreachable-code)
+       b
+         (pass)
+         (go c)
+         (reached-unreachable-code)
+       a
+         (pass)
+         (go b)
+         (reached-unreachable-code)
+       c
+         (pass))))
   (with-call/cc
     (let ((counter 0))
       (dotimes (i 5)
@@ -135,11 +134,16 @@
   (with-call/cc
     (let ((i 0))
       (tagbody
-       a (incf i) (is (= 1 i))
-       b (incf i) (is (= 2 i))
-       c (is (= 2 i))))))
+       a
+         (incf i)
+         (is (= 1 i))
+       b
+         (incf i)
+         (is (= 2 i))
+       c
+         (is (= 2 i))))))
 
-(test call/cc-flet
+(deftest test/interpreted/flet ()
   (with-call/cc
     (flet ((foo () 'x))
       (is (eql 'x (foo))))
@@ -154,7 +158,7 @@
                (foo)))
         (is (eql 'outer-foo (bar)))))))
 
-(test call/cc-labels
+(deftest test/interpreted/labels ()
   (with-call/cc
     (labels ((foo () 'x))
       (is (eql 'x (foo))))
@@ -162,7 +166,7 @@
       (labels ((bar () (foo))
                (foo () 'inner-foo))
         (is (eql 'inner-foo (bar))))))
-  (finishes 
+  (finishes
     (with-call/cc
       (labels ((rec (x) x))
         #'rec
@@ -187,13 +191,13 @@
   (defun (setf test-funcall.0) (new-value)
     (setf value new-value)))
 
-(test call/cc-setf-funcall
+(deftest test/interpreted/setf-funcall ()
   (setf (test-funcall.0) 0)
   (is (= 0 (with-call/cc (test-funcall.0))))
   (is (= 1 (with-call/cc (setf (test-funcall.0) 1))))
   (is (= 2 (with-call/cc (funcall #'(setf test-funcall.0) 2)))))
 
-(test call/cc-lambda-requried-arguments
+(deftest test/interpreted/lambda-requried-arguments ()
   (with-call/cc
     (is (eql t (funcall (lambda () t))))
     (is (eql t (funcall (lambda (x) x) t))))
@@ -201,7 +205,7 @@
     (with-call/cc
       (funcall (lambda (x) x)))))
 
-(test call/cc-lambda-optional-arguments
+(deftest test/interpreted/lambda-optional-arguments ()
   (with-call/cc
     (is (eql t (funcall (lambda (&optional a) a) t)))
     (is (eql t (funcall (lambda (&optional (a t)) a)))))
@@ -211,7 +215,7 @@
                            (+ a 1))))))
     (is (= 1 (kall cont 0)))))
 
-(test call/cc-lambda-keyword-arguments
+(deftest test/interpreted/lambda-keyword-arguments ()
   (with-call/cc
     (is (eql 'a   (funcall (lambda (&key a) a) :a 'a)))
     (is (eql 'b   (funcall (lambda (&key (a 'b)) a))))
@@ -233,7 +237,7 @@
 (defun/cc test-defun/cc3 (a &key (b 1))
   (+ a b))
 
-(test call/cc-defun/cc
+(deftest test/interpreted/defun/cc ()
   (let ((cont nil))
     (setf cont (with-call/cc (test-defun/cc1)))
     (is (eql nil (kall cont nil)))
@@ -246,30 +250,34 @@
       (is (= 1 (test-defun/cc3 0)))
       (is (= 2 (test-defun/cc3 1))))))
 
-(defgeneric/cc test-generic/cc (a &key v))
+(defgeneric/cc test-generic/cc1 (a &key v))
 
-(defmethod/cc test-generic/cc ((a symbol) &key (v 3))
+(defmethod/cc test-generic/cc1 ((a symbol) &key (v 3))
   v)
 
-(defmethod/cc test-generic/cc ((a string) &key (v 5))
+(defmethod/cc test-generic/cc1 ((a string) &key (v 5))
   v)
 
-(test call/cc-defgeneric/cc
+(deftest test/interpreted/generic-method/1 ()
   (with-call/cc
     (is (= 3 (test-generic/cc 'a)))
     (is (= 0 (test-generic/cc 'a :v 0)))
     (is (= 5 (test-generic/cc "a")))
     (is (= 0 (test-generic/cc "a" :v 0)))))
 
-(defmethod/cc test-generic/cc2 :before (a)
-  (let/cc k 'before))
-
 (defmethod/cc test-generic/cc2 (a)
   'primary)
 
-(test test-generic/cc2
+(defmethod/cc test-generic/cc2 :before (a)
+  (let/cc k 'before))
+
+(deftest test/interpreted/generic-method/2 ()
   (with-call/cc
    (is (eql 'before (test-generic/cc2 t)))))
+
+(defmethod/cc test-generic/cc3 (a)
+  (let/cc k (cons 'primary k))
+  a)
 
 (defmethod/cc test-generic/cc3 :before (a)
   (let/cc k (cons 'before k)))
@@ -278,16 +286,11 @@
   (let/cc k (cons 'around k))
   (call-next-method a))
 
-(defmethod/cc test-generic/cc3 (a)
-  (let/cc k (cons 'primary k))
-  a)
-
 (defmethod/cc test-generic/cc3 :after (a)
   (let/cc k (cons 'after k)))
 
-(test call/cc-defgeneric/cc3
-  (destructuring-bind (value . cont)
-      (with-call/cc (test-generic/cc3 32))
+(deftest test/interpreted/generic-method/3 ()
+  (bind (((value . cont) (with-call/cc (test-generic/cc3 32))))
     (is (eql 'around value))
     (destructuring-bind (value . cont)
         (with-call/cc (kall cont))
@@ -300,7 +303,7 @@
           (is (eql 'after value))
           (is (eql 32 (kall cont))))))))
 
-(test call/cc-loop
+(deftest test/interpreted/loop ()
   (let ((cont (with-call/cc
                 (loop
                    repeat 2
@@ -321,7 +324,7 @@
                            finally (return-from done total)))))))
     (is (= 26 (kall (kall (kall cont 2) 13) 13)))))
 
-(test common-lisp/cc
+(deftest test/interpreted/common-lisp ()
   (let (cont value)
     (setf cont (with-call/cc (mapcar (lambda (x)
                                        (+ x (let/cc k k)))
@@ -334,7 +337,7 @@
 (defun/cc throw-something (something)
   (throw 'done something))
 
-(test catch/cc
+(deftest test/interpreted/catch ()
   (with-call/cc
     (is (eql t
              (catch 'whatever
@@ -355,7 +358,7 @@
                (throw-something t)
                nil)))))
 
-(test multiple-value-call
+(deftest test/interpreted/multiple-value-call ()
   (with-call/cc
       (is (= 1 (multiple-value-call
                    #'identity
@@ -473,7 +476,7 @@
 (defmacro test-special (name)
   (let ((body-without-stop `(,name nil))
         (body-with-stop `(,name t)))
-    `(test ,name
+    `(deftest ,name ()
       (is (= 1 (with-call/cc ,body-without-stop)))
       (signals unbound-variable
         (with-call/cc ,body-without-stop (lookup-special-in-lisp)))
@@ -487,27 +490,27 @@
         (kall (with-call/cc ,body-with-stop (lookup-special-in-defun/cc nil)))))))
 
 ;; export and lookup in the same lexical environment
-(test-special define-and-lookup-special-in-defun/cc)
+(test-special test/interpreted/define-and-lookup-special-in-defun/cc)
 
 ;; export and lookup in cc code
-(test-special export-special-from-let/cc-and-lookup-in-defun/cc)
-(test-special export-special-from-let/cc-and-lookup-in-let/cc)
-(test-special export-special-from-let/cc-and-lookup-in-let*/cc)
-(test-special export-special-from-let*/cc-and-lookup-in-defun/cc)
-(test-special export-special-from-let*/cc-and-lookup-in-let/cc)
-(test-special export-special-from-let*/cc-and-lookup-in-let*/cc)
+(test-special test/interpreted/export-special-from-let/cc-and-lookup-in-defun/cc)
+(test-special test/interpreted/export-special-from-let/cc-and-lookup-in-let/cc)
+(test-special test/interpreted/export-special-from-let/cc-and-lookup-in-let*/cc)
+(test-special test/interpreted/export-special-from-let*/cc-and-lookup-in-defun/cc)
+(test-special test/interpreted/export-special-from-let*/cc-and-lookup-in-let/cc)
+(test-special test/interpreted/export-special-from-let*/cc-and-lookup-in-let*/cc)
 
 ;; export from cc code and lookup in lisp code
-(test-special export-special-from-let/cc-and-lookup-in-lisp)
-(test-special export-special-from-let*/cc-and-lookup-in-lisp)
+(test-special test/interpreted/export-special-from-let/cc-and-lookup-in-lisp)
+(test-special test/interpreted/export-special-from-let*/cc-and-lookup-in-lisp)
 
 ;; export from lisp code and lookup in cc code
-(test-special export-special-from-lisp-and-lookup-in-defun/cc)
-(test-special export-special-from-lisp-and-lookup-in-let/cc)
-(test-special export-special-from-lisp-and-lookup-in-let*/cc)
+(test-special test/interpreted/export-special-from-lisp-and-lookup-in-defun/cc)
+(test-special test/interpreted/export-special-from-lisp-and-lookup-in-let/cc)
+(test-special test/interpreted/export-special-from-lisp-and-lookup-in-let*/cc)
 
 ;; export in lisp code let it go through some cc code and lookup in lisp code after continuing
-(test export-special-from-lisp-and-lookup-in-lisp
+(deftest export-special-from-lisp-and-lookup-in-lisp ()
   (is (= 1
          (kall (let ((var 1))
                  (declare (special var))
@@ -519,7 +522,7 @@
 
 (defvar *special-variable-in-lisp* 42)
 
-(test special-lisp-var-rebound-in/cc
+(deftest special-lisp-var-rebound-in/cc ()
   (is (= 42
          (with-call/cc
            *special-variable-in-lisp*)))
