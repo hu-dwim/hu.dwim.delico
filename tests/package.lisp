@@ -16,7 +16,7 @@
         ))
 
 (import
- '(kall retk)
+ '(kall)
  :cl-delico-test)
 
 (in-package :cl-delico-test)

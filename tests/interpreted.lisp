@@ -46,7 +46,7 @@
 
 (deftest test/interpreted/let-in-cc ()
   (let ((k (with-call/cc
-             (let ((a (retk)))
+             (let ((a (let/cc k k)))
                (+ a 1)))))
     (is (= 1 (kall k 0)))
     (is (= 2 (kall k 1)))))

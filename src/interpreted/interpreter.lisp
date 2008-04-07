@@ -127,9 +127,6 @@ form being evaluated.")
 (defmacro let/cc (k &body body)
   `(call/cc (lambda (,k) ,@body)))
 
-(defmacro retk ()
-  `(let/cc k k))
-
 (defmacro klambda ((&optional (value (gensym) valuep) (other-values (gensym) other-values-p))
                    &body body)
   (cond
