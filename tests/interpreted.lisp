@@ -388,6 +388,8 @@
                  (values -1)
                  (values 1 2))))))
 
+#| TODO move into a standalone file and fix it...
+
 ;;; speical variable handling
 (defun/cc lookup-special-in-defun/cc (stop)
   (declare (special var))
@@ -534,3 +536,5 @@
            (let ((*special-variable-in-lisp* 43))
              ;;(declare (special *special-variable-in-lisp*)) ; TODO shouldn't be needed
              *special-variable-in-lisp*)))))
+
+|#

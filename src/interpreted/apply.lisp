@@ -125,14 +125,15 @@
     (values (mapcar 'second dyn-env)
             (mapcar 'cddr dyn-env))))
 
-;;;; apply'ing a local function
-
 (defmethod evaluate/cc ((node walked-lexical-application-form) lex-env dyn-env k)
   (evaluate-arguments-then-apply
    (lambda (args)
      (apply-lambda/cc (lookup lex-env :flet (operator-of node) :error-p t) args dyn-env k))
    (arguments-of node) '()
    lex-env dyn-env))
+
+(defmethod evaluate/cc ((node unwalked-lexical-application-form) lex-env dyn-env k)
+  (error "Calling an unwalked lexical function is not supported by the call/cc interpreter"))
 
 ;;;; apply'ing a lambda
 
