@@ -104,28 +104,31 @@
   (is nil "Somehow we reached unreachable code in a tagbody!"))
 
 (deftest test/interpreted/tagbody ()
-  (with-call/cc
-    (finishes
-      (tagbody
-         (go a)
-         (reached-unreachable-code)
-       a
-         (pass))))
-  (with-call/cc
-    (finishes
-      (tagbody
-         (go a)
-         (reached-unreachable-code)
-       b
-         (pass)
-         (go c)
-         (reached-unreachable-code)
-       a
-         (pass)
-         (go b)
-         (reached-unreachable-code)
-       c
-         (pass))))
+  (macrolet ((test (expected form)
+               `(with-call/cc
+                  (let ((count 0))
+                    (flet ((pass ()
+                             (incf count)))
+                      (is (= ,expected
+                             ,form)))))))
+    (test 1 (tagbody
+               (go a)
+               (reached-unreachable-code)
+             a
+               (pass)))
+    (test 3 (tagbody
+               (go a)
+               (reached-unreachable-code)
+             b
+               (pass)
+               (go c)
+               (reached-unreachable-code)
+             a
+               (pass)
+               (go b)
+               (reached-unreachable-code)
+             c
+               (pass))))
   (with-call/cc
     (let ((counter 0))
       (dotimes (i 5)
