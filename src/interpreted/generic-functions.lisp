@@ -6,10 +6,6 @@
 
 (in-package :cl-delico)
 
-;;;; ** Functions, Generic Functions, Methods and standard-combination
-
-;;;; DEFUN/CC
-
 (defmacro defun/cc (name arguments &body body)
   `(progn
      (setf (fdefinition/cc ',name 'defun/cc)
@@ -24,8 +20,6 @@
        (error "Sorry, /CC function are not callable outside of with-call/cc."))
      ))
 
-;;;; DEFGENERIC/CC
-
 (defmacro defgeneric/cc (name args &rest options)
   "Trivial wrapper around defgeneric designed to alert readers that these methods are cc methods."
   (assert (not (find :method options :key #'first)) () "TODO: defgeneric/cc does not walk the :method entries yet, use standalone defmethod/cc's for now")
@@ -34,8 +28,6 @@
        ,@options
        (:method-combination cc-standard))
      (setf (fdefinition/cc ',name 'defmethod/cc) t)))
-
-;;;; DEFMETHOD/CC
 
 ; for emacs:  (setf (get 'defmethod/cc 'common-lisp-indent-function) 'lisp-indent-defmethod)
 

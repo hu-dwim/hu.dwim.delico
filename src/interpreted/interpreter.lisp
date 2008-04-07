@@ -47,17 +47,12 @@
             (list* type name datum))
         environment))
 
-(defmacro with-call/cc (&environment lexenv &body body)
+(def (macro e) with-call/cc (&environment lexenv &body body)
   "Execute BODY with delimited partial continuations.
 
-  Within the code of BODY almost all common lisp forms maintain
-  their normal semantics. The following special forms are
-  allowed:
+Within the code of BODY almost all common lisp forms maintain their normal semantics. The following special forms are allowed:
 
-  (call/cc LAMBDA) - LAMBDA, a one argument function, will be
-  passed a continuation. This object may then be passed to the
-  function KALL which will cause execution to resume around the
-  call/cc form."
+\(call/cc LAMBDA) - LAMBDA, a one argument function, will be passed a continuation. This object may then be passed to the function KALL which will cause execution to resume around the call/cc form."
   (let ((walkenv (make-walkenv lexenv))
         (evaluate-env nil))
     (dolist* ((type name &rest data) (car walkenv))
@@ -70,6 +65,7 @@
                     ;; continuations, unserializable. we would need to
                     ;; change this to a regular :let and not allow the
                     ;; setting of lexical variables.
+                    ;; TODO install a configuration that requires serializable closures and issue a warning in this case here
                     `(lambda () ,name)
                     (with-unique-names (v)
                       `(lambda (,v) (setf ,name ,v))))
@@ -100,23 +96,19 @@ semantics."
 
 (defvar *cc-functions* (make-hash-table :test 'eql))
 
-(defun fmkunbound/cc (function-name)
+(def (function e) fmkunbound/cc (function-name)
   (remhash function-name *cc-functions*))
 
-(defun fdefinition/cc (function-name)
+(def (function e) fdefinition/cc (function-name)
   (values-list (gethash function-name *cc-functions*)))
 
-(defun (setf fdefinition/cc) (closure-object function-name &optional (type 'defun/cc))
+(def (function e) (setf fdefinition/cc) (closure-object function-name &optional (type 'defun/cc))
   (setf (gethash function-name *cc-functions*) (list closure-object type)))
 
 (defvar *debug-evaluate/cc* nil
-  "When non NIL the evaluator will print, at each evaluation
-  step, what it's evaluating and the value passed in from the
-  previous step.
+  "When non NIL the evaluator will print, at each evaluation step, what it's evaluating and the value passed in from the previous step.
 
-If set to :FULL then at each step we print the form, the
-environment and the continuation. If set to T we just print the
-form being evaluated.")
+If set to :FULL then at each step we print the form, the environment and the continuation. If set to T we just print the form being evaluated.")
 
 ;;;; Implementation
 
