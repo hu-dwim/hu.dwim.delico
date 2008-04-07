@@ -18,30 +18,30 @@
 
 (defvar *call/cc-returns* nil)
 
-(defun lookup (environment type name &key (error-p nil) (default-value nil))
+(def (function o) lookup (environment type name &key (error-p nil) (default-value nil))
   (loop
-     for (.type .name . data) in environment
-     when (and (eql .type type) (eql .name name))
-       return (values data t)
-     finally
+     :for (.type .name . data) :in environment
+     :when (and (eq .type type) (eq .name name))
+       :return (values data t)
+     :finally
        (if error-p
            (error "Sorry, No value for ~S of type ~S in environment ~S found."
                   name type environment)
            (values default-value nil))))
 
-(defun (setf lookup) (value environment type name &key (error-p nil))
+(def (function o) (setf lookup) (value environment type name &key (error-p nil))
   (loop
-     for env-piece in environment
-     when (and (eql (first env-piece)  type)
-               (eql (second env-piece) name))
-       do (setf (cddr env-piece) value) and
-       return value
-     finally
+     :for env-piece :in environment
+     :when (and (eq (first env-piece)  type)
+                (eq (second env-piece) name))
+       :do (setf (cddr env-piece) value) and
+       :return value
+     :finally
        (when error-p
          (error "Sorry, No value for ~S of type ~S in environment ~S found."
                 name type environment))))
 
-(defun register (environment type name datum &rest other-datum)
+(def (function io) register (environment type name datum &rest other-datum)
   (cons (if other-datum
             (list* type name datum other-datum)
             (list* type name datum))

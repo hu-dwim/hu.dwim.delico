@@ -7,13 +7,22 @@
 (cl:in-package :cl-user)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (unless (find-package '#:cl-delico.system)
-    (defpackage #:cl-delico.system
-      (:use :common-lisp :asdf))))
+  (asdf:oos 'asdf:load-op :cl-syntax-sugar)
 
-(in-package #:cl-delico.system)
+  (unless (find-package '#:cl-delico-system)
+    (defpackage #:cl-delico-system
+      (:use :common-lisp :asdf :cl-syntax-sugar)
+      (:export
+       #:*load-as-production-p*))))
+
+(in-package #:cl-delico-system)
+
+(defvar *load-as-production-p* t)
 
 (defsystem :cl-delico
+  :default-component-class cl-source-file-with-readtable
+  :class system-with-readtable
+  :setup-readtable-function "cl-delico::setup-readtable"
   :depends-on (:alexandria
                :metabang-bind
                :cl-def
@@ -24,7 +33,8 @@
   :components ((:static-file "cl-delico.asd")
                (:module "src"
                 :components ((:file "package")
-                             (:file "duplicates" :depends-on ("package"))
+                             (:file "configuration" :depends-on ("package"))
+                             (:file "duplicates" :depends-on ("configuration" "package"))
                              (:module "interpreted"
                                       :depends-on ("package" "duplicates")
                                       :serial t
@@ -34,11 +44,13 @@
                                                    (:file "generic-functions")
                                                    (:file "common-lisp-cc")))))))
 
-(defclass delico-test-system (system)
+(defclass delico-test-system (system-with-readtable)
   ())
 
 (defsystem :cl-delico-test
   :class delico-test-system
+  :default-component-class cl-source-file-with-readtable
+  :setup-readtable-function "cl-delico::setup-readtable"
   :depends-on (:cl-delico ; and all its dependencies
                :stefil
                )
