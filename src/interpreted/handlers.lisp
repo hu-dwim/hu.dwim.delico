@@ -229,9 +229,14 @@
 
 ;;;; SETQ
 
-(defk k-for-local-setq (var lex-env dyn-env k)
+(defk k-for-walked-lexical-setq (var lex-env dyn-env k)
     (value)
   (setf (lookup lex-env :let var :error-p t) value)
+  (kontinue k value))
+
+(defk k-for-unwalked-lexical-setq (var lex-env dyn-env k)
+    (value)
+  (funcall (second (lookup lex-env :lexical-let var :error-p t)) value)
   (kontinue k value))
 
 (defk k-for-free-setq (var lex-env dyn-env k)
@@ -239,32 +244,35 @@
   (setf (symbol-value var) value)
   (kontinue k value))
 
-(defk k-for-local-lexical-setq (var lex-env dyn-env k)
-    (value)
-  (funcall (second (lookup lex-env :lexical-let var :error-p t)) value)
-  (kontinue k value))
-
 (defmethod evaluate/cc ((node setq-form) lex-env dyn-env k)
-  (macrolet ((if-found (&key in-env of-type kontinue-with)
-               `(multiple-value-bind (value foundp)
-                    (lookup ,in-env ,of-type (variable-name-of node))
-                  (declare (ignore value))
-                  (when foundp
-                    (return-from evaluate/cc
-                      (evaluate/cc (value-of node) lex-env dyn-env
-                                   `(,',kontinue-with ,(variable-name-of node) ,lex-env ,dyn-env ,k)))))))
-    (if-found :in-env lex-env
-              :of-type :let
-              :kontinue-with k-for-local-setq)
-    (if-found :in-env dyn-env
-              :of-type :let
-              :kontinue-with k-for-special-setq)
-    (if-found :in-env lex-env
-              :of-type :lexical-let
-              :kontinue-with k-for-local-lexical-setq)
-    (evaluate/cc (value-of node)
-                       lex-env dyn-env
-                       `(k-for-free-setq ,(variable-name-of node) ,lex-env ,dyn-env ,k))))
+  (bind ((variable (variable-of node))
+         (variable-name (name-of variable)))
+    (macrolet ((if-found (&key in-env of-type kontinue-with)
+                 `(multiple-value-bind (value foundp)
+                      (lookup ,in-env ,of-type variable-name)
+                    (declare (ignore value))
+                    (when foundp
+                      (return-from evaluate/cc
+                        (evaluate/cc (value-of node) lex-env dyn-env
+                                     `(,',kontinue-with ,variable-name ,lex-env ,dyn-env ,k)))))))
+      (etypecase variable
+        (walked-lexical-variable-reference-form
+         (if-found :in-env lex-env
+                   :of-type :let
+                   :kontinue-with k-for-walked-lexical-setq)
+         (error "What?! Couldn't find the lexical variable ~S in the cc evaluator's environment?!" variable-name))
+        (free-variable-reference-form
+         (if-found :in-env dyn-env
+                   :of-type :let
+                   :kontinue-with k-for-special-setq)
+         (evaluate/cc (value-of node)
+                      lex-env dyn-env
+                      `(k-for-free-setq ,variable-name ,lex-env ,dyn-env ,k)))
+        (unwalked-lexical-variable-reference-form
+         (if-found :in-env lex-env
+                   :of-type :lexical-let
+                   :kontinue-with k-for-unwalked-lexical-setq)
+         (error "What?! Couldn't find the lexical variable ~S in the cc evaluator's environment?!" variable-name))))))
 
 ;;;; SYMBOL-MACROLET
 
