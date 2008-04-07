@@ -260,10 +260,10 @@
 
 (deftest test/interpreted/generic-method/1 ()
   (with-call/cc
-    (is (= 3 (test-generic/cc 'a)))
-    (is (= 0 (test-generic/cc 'a :v 0)))
-    (is (= 5 (test-generic/cc "a")))
-    (is (= 0 (test-generic/cc "a" :v 0)))))
+    (is (= 3 (test-generic/cc1 'a)))
+    (is (= 0 (test-generic/cc1 'a :v 0)))
+    (is (= 5 (test-generic/cc1 "a")))
+    (is (= 0 (test-generic/cc1 "a" :v 0)))))
 
 (defmethod/cc test-generic/cc2 (a)
   'primary)
