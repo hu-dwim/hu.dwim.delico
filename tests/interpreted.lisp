@@ -17,6 +17,22 @@
   (is (= 1 (kall (with-call/cc (let/cc k k) 1))))
   (is (= 2 (kall (with-call/cc (let/cc k k) 1 2)))))
 
+(deftest test/interpreted/multiple-value-prog1 ()
+  (is (= 1 (with-call/cc
+             (multiple-value-prog1
+                 1
+               2))))
+  (bind ((run #f)
+         (k (with-call/cc
+              (multiple-value-prog1
+                  (let/cc k k)
+                (setf run #t)))))
+    (is (not run))
+    (is (= 42 (kall k 42)))
+    (with-expected-failures
+      ;; TODO unwalked lexical variable setting is broken for now
+      (is run))))
+
 (deftest test/interpreted/let ()
   (is (= 1 (with-call/cc
 	    (let ()
