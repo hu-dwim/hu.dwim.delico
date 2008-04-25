@@ -7,10 +7,8 @@
 (defmacro redefun/cc (name args &body body)
   `(progn
      (setf (fdefinition/cc ',name)
-           (make-instance 'closure/cc
-                          :code (walk-form '(lambda ,args
-                                             (block ,name ,@body)))
-                          :env '()))
+           (make-closure/cc (walk-form '(lambda ,args
+                                         (block ,name ,@body)))))
      ',name))
 
 (defmacro apply-key (key element)

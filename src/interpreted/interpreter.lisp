@@ -53,7 +53,7 @@
 Within the code of BODY almost all common lisp forms maintain their normal semantics. The following special forms are allowed:
 
 \(call/cc LAMBDA) - LAMBDA, a one argument function, will be passed a continuation. This object may then be passed to the function KALL which will cause execution to resume around the call/cc form."
-  (let ((walkenv (make-walkenv lexenv))
+  (let ((walkenv (make-walk-environment lexenv))
         (evaluate-env nil))
     (dolist* ((type name &rest data) (car walkenv))
       (declare (ignore data))

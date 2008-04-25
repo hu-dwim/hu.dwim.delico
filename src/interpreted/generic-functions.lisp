@@ -9,11 +9,9 @@
 (defmacro defun/cc (name arguments &body body)
   `(progn
      (setf (fdefinition/cc ',name 'defun/cc)
-           (make-instance 'closure/cc
-                          :code (walk-form '(lambda ,arguments
-                                             (block ,name
-                                               (locally ,@body))))
-                          :env nil))
+           (make-closure/cc (walk-form '(lambda ,arguments
+                                         (block ,name
+                                           (locally ,@body))))))
      #+nil ;; TODO delme probably
      (defun ,name ,arguments
        (declare (ignore ,@(extract-argument-names arguments)))
@@ -31,7 +29,7 @@
 
 ; for emacs:  (setf (get 'defmethod/cc 'common-lisp-indent-function) 'lisp-indent-defmethod)
 
-(defmacro defmethod/cc (&whole whole name &rest args)
+(defmacro defmethod/cc (&whole whole &environment lexenv name &rest args)
   (let ((qualifiers (list (if (and (symbolp (first args))
                                    (not (null (first args))))
                               (pop args)
@@ -52,42 +50,34 @@
            ;; as a colsure/cc factory, so make them all ignored.
            ,(when arguments
              `(declare (ignore ,@(extract-argument-names arguments :allow-specializers t))))
-           (make-instance 'closure/cc
-                          ;; TODO lexenv is ignored
-                          ;; TODO make sure that the compile-time walked forms are not modified anywhere
-                          :code ,(walk-form `(lambda ,(clean-argument-list arguments)
-                                               (block ,name
-                                                 (locally
-                                                     ,@declarations
-                                                   ,@body)))
-                                            nil (make-walkenv))
-			  :env nil))))))
+           (make-closure/cc
+            ;; TODO make sure that the compile-time walked forms are not modified anywhere
+            ,(walk-form `(lambda ,(clean-argument-list arguments)
+                           (block ,name
+                             (locally
+                                 ,@declarations
+                               ,@body)))
+                        nil (make-walk-environment lexenv))))))))
 
 ;;;; CC-STANDARD (standard-combination for cc methods)
 
 (defun closure-with-nextmethod (closure next)
-  (make-instance 'closure/cc
-		 :code (code closure)
-		 :env (register (env closure) :next-method t next)))
+  (make-closure/cc (code closure) (register (env closure) :next-method t next)))
 
 (defun closure-with-befores (closure befores)
-  (make-instance 'closure/cc
-		 :code (walk-form `(lambda (&rest args)
-				     ,@(loop
-					  for before in befores
-					  collect `(apply ,before args))
-				     (apply ,closure args)))
-		 :env nil))
+  (make-closure/cc (walk-form `(lambda (&rest args)
+                                 ,@(loop
+                                      :for before :in befores
+                                      :collect `(apply ,before args))
+                                 (apply ,closure args)))))
 
 (defun closure-with-afters (closure afters)
-  (make-instance 'closure/cc
-		 :code (walk-form `(lambda (&rest args)
-				     (prog1
-					 (apply ,closure args)
-				       ,@(loop
-					    for after in afters
-					    collect `(apply ,after args)))))
-		 :env nil))
+  (make-closure/cc (walk-form `(lambda (&rest args)
+                                 (prog1
+                                     (apply ,closure args)
+                                   ,@(loop
+                                        :for after :in afters
+                                        :collect `(apply ,after args)))))))
 
 (define-method-combination cc-standard
     (&key (around-order :most-specific-first)

@@ -62,13 +62,13 @@ that it creates a fresh binding."
 			    (slot-value    argument slot-name))
 		  (push it vars)))
 	      (nreverse vars)))
-	  (walk-lambda-list lambda-list nil (make-walkenv) :allow-specializers allow-specializers)))
+	  (walk-lambda-list lambda-list nil (make-walk-environment) :allow-specializers allow-specializers)))
 
 (defun convert-to-generic-lambda-list (defmethod-lambda-list)
   (loop
      with generic-lambda-list = '()
      for arg in (walk-lambda-list defmethod-lambda-list
-                                  nil (make-walkenv)
+                                  nil (make-walk-environment)
                                   :allow-specializers t)
      do (etypecase arg
           ((or required-function-argument-form

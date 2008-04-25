@@ -22,7 +22,7 @@
 
 (defclass closure/cc ()
   ((code :accessor code :initarg :code)
-   (env :accessor env :initarg :env))
+   (env :accessor env :initarg :environment))
   (:metaclass closer-mop:funcallable-standard-class))
 
 (def constructor closure/cc
@@ -35,11 +35,14 @@
                        '()
                        *toplevel-k*)))))
 
+(def (function i) make-closure/cc (code &optional (environment (list)))
+  (make-instance 'closure/cc :code code :environment environment))
+
 ;;;; LAMBDA
 
 (defmethod evaluate/cc ((lambda lambda-function-form) lex-env dyn-env k)
   (declare (ignore dyn-env))
-  (kontinue k (make-instance 'closure/cc :code lambda :env lex-env)))
+  (kontinue k (make-closure/cc lambda lex-env)))
 
 ;;;; APPLY and FUNCALL
 
