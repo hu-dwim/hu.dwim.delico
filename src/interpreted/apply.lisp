@@ -21,7 +21,7 @@
   (kontinue k (lookup lex-env :flet (name-of node) :error-p t)))
 
 (defclass closure/cc ()
-  ((code :accessor code :initarg :code)
+  ((code :accessor code-of :initarg :code)
    (env :accessor environment-of :initarg :environment))
   (:metaclass closer-mop:funcallable-standard-class))
 
@@ -172,10 +172,10 @@
 ;;;; environment and transfers control.
 
 (defmethod apply-lambda/cc ((operator closure/cc) effective-arguments dyn-env k)
-  (trace-statement "Applying cc closure ~S to ~S" (source-of (code operator)) effective-arguments)
+  (trace-statement "Applying cc closure ~S to ~S" (source-of (code-of operator)) effective-arguments)
   (bind ((lex-env (environment-of operator))
          (remaining-arguments effective-arguments)
-         (remaining-parameters (arguments-of (code operator))))
+         (remaining-parameters (arguments-of (code-of operator))))
     ;; in this code ARGUMENT refers to the values passed to the
     ;; function. PARAMETER refers to the lambda of the closure
     ;; object. we walk down the parameters and put the arguments in
@@ -190,12 +190,12 @@
              (if remaining-arguments
                  (setf lex-env (register lex-env :let (name-of parameter) (pop remaining-arguments)))
                  (error "Missing required arguments, expected ~S, got ~S."
-                        (arguments-of (code operator)) effective-arguments))
+                        (arguments-of (code-of operator)) effective-arguments))
              (pop remaining-parameters))
             (t (return))))
 
     ;; handle special variables
-    (setf dyn-env (import-specials (code operator) dyn-env))
+    (setf dyn-env (import-specials (code-of operator) dyn-env))
 
     ;; now we start the chain optional->keyword->evaluate-body. We do
     ;; this because optional and keyword parameters may have default
@@ -261,7 +261,7 @@
                    (remaining-arguments)
                    "Odd number of arguments in ~S being applied to ~S."
                    remaining-arguments
-                   (source-of (code operator)))
+                   (source-of (code-of operator)))
            (bind ((keyword-name (effective-keyword-name-of parameter))
                   (value (getf remaining-arguments keyword-name parameter)))
              (if (eql parameter value)
@@ -280,11 +280,11 @@
                      (setf lex-env (register lex-env :let it t))))))))
           (allow-other-keys-function-argument-form
            (when (cdr remaining-parameters)
-             (error "Bad lambda list: ~S" (arguments-of (code operator))))
+             (error "Bad lambda list: ~S" (arguments-of (code-of operator))))
            (return))
           (t (unless (null remaining-parameters)
-               (error "Bad lambda list: ~S" (arguments-of (code operator)))))))
-  (evaluate-progn/cc (body-of (code operator)) lex-env dyn-env k))
+               (error "Bad lambda list: ~S" (arguments-of (code-of operator)))))))
+  (evaluate-progn/cc (body-of (code-of operator)) lex-env dyn-env k))
 
 (defk k-for-apply-lambda/cc/keyword-default-value
     (operator remaining-parameters remaining-arguments lex-env dyn-env k)
