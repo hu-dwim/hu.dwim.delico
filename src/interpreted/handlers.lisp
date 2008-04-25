@@ -75,7 +75,7 @@
         (setf lex-env (register lex-env :flet name closure))
         (push closure closures)))
     (dolist (closure closures)
-      (setf (env closure) lex-env))
+      (setf (environment-of closure) lex-env))
     (evaluate-progn/cc (body-of node) lex-env dyn-env k)))
 
 ;;;; LET/LET*

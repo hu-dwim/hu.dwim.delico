@@ -62,7 +62,7 @@
 ;;;; CC-STANDARD (standard-combination for cc methods)
 
 (defun closure-with-nextmethod (closure next)
-  (make-closure/cc (code closure) (register (env closure) :next-method t next)))
+  (make-closure/cc (code closure) (register (environment-of closure) :next-method t next)))
 
 (defun closure-with-befores (closure befores)
   (make-closure/cc (walk-form `(lambda (&rest args)

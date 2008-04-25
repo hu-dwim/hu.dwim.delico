@@ -22,7 +22,7 @@
 
 (defclass closure/cc ()
   ((code :accessor code :initarg :code)
-   (env :accessor env :initarg :environment))
+   (env :accessor environment-of :initarg :environment))
   (:metaclass closer-mop:funcallable-standard-class))
 
 (def constructor closure/cc
@@ -173,7 +173,7 @@
 
 (defmethod apply-lambda/cc ((operator closure/cc) effective-arguments dyn-env k)
   (trace-statement "Applying cc closure ~S to ~S" (source-of (code operator)) effective-arguments)
-  (bind ((lex-env (env operator))
+  (bind ((lex-env (environment-of operator))
          (remaining-arguments effective-arguments)
          (remaining-parameters (arguments-of (code operator))))
     ;; in this code ARGUMENT refers to the values passed to the
