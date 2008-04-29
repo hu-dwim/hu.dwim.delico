@@ -345,7 +345,7 @@
   (lambda (&rest arguments)
     (not (apply function arguments))))
 
-(redefun/cc list-delete-if (test list start end count key)
+(defun/cc list-delete-if (test list start end count key)
   (let* ((head (cons nil list))
 	 (splice head))
     (do ((i 0 (1+ i))
@@ -359,7 +359,7 @@
 	  (when count (decf count))
           (setq splice (cdr (rplacd splice x)))))))
 
-(redefun/cc vector-delete-if (test vector start end count key)
+(defun/cc vector-delete-if (test vector start end count key)
   (let* ((length (length vector))
 	 (end (or end length))
 	 (count (or count length))

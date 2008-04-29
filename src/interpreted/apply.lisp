@@ -136,7 +136,7 @@
    lex-env dyn-env))
 
 (defmethod evaluate/cc ((node unwalked-lexical-application-form) lex-env dyn-env k)
-  (error "Calling an unwalked lexical function is not supported by the call/cc interpreter"))
+  (error "Calling an unwalked lexical function is not yet supported by the call/cc interpreter"))
 
 ;;;; apply'ing a lambda
 
@@ -170,6 +170,8 @@
 ;;;; Finally this is the function which, given a closure/cc object and
 ;;;; a list of (evaluated) arguments parses them, setup the
 ;;;; environment and transfers control.
+
+(defgeneric apply-lambda/cc (operator effective-arguments dyn-env k))
 
 (defmethod apply-lambda/cc ((operator closure/cc) effective-arguments dyn-env k)
   (trace-statement "Applying cc closure ~S to ~S" (source-of (code-of operator)) effective-arguments)
