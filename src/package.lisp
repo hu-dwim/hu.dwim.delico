@@ -25,4 +25,9 @@
    #:*debug-evaluate/cc*
    #:*trace-cc*
 
+   )
+
+  (:shadow
+   #:walk-form
+   #:undefined-reference-handler
    ))

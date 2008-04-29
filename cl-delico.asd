@@ -35,8 +35,9 @@
                 :components ((:file "package")
                              (:file "configuration" :depends-on ("package"))
                              (:file "duplicates" :depends-on ("configuration" "package"))
+                             (:file "infrastructure" :depends-on ("configuration" "package" "duplicates"))
                              (:module "interpreted"
-                                      :depends-on ("package" "duplicates")
+                                      :depends-on ("package" "duplicates" "infrastructure")
                                       :serial t
                                       :components ((:file "interpreter")
                                                    (:file "handlers")
