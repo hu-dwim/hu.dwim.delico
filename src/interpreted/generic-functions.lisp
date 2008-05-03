@@ -6,17 +6,17 @@
 
 (in-package :cl-delico)
 
+(def (constant :test 'equal) +defun-stub-error-message+ "This is only a compile-time stub, normally you shouldn't be able to call it")
+
 (defmacro defun/cc (name arguments &body body)
   `(progn
-     (setf (fdefinition/cc ',name 'defun/cc)
-           (make-closure/cc (walk-form '(lambda ,arguments
-                                         (block ,name
-                                           (locally ,@body))))))
-     #+nil ;; TODO delme probably
-     (defun ,name ,arguments
-       (declare (ignore ,@(extract-argument-names arguments)))
-       (error "Sorry, /CC function are not callable outside of with-call/cc."))
-     ))
+     (eval-when (:compile-toplevel)
+       #+sbcl(sb-c:%compiler-defun ',name nil t))
+     (eval-when (:load-toplevel :execute)
+       (setf (fdefinition/cc ',name 'defun/cc)
+             (make-closure/cc (walk-form '(lambda ,arguments
+                                           (block ,name
+                                             (locally ,@body)))))))))
 
 (defmacro defgeneric/cc (name args &rest options)
   "Trivial wrapper around defgeneric designed to alert readers that these methods are cc methods."
@@ -25,7 +25,8 @@
      (defgeneric ,name ,args
        ,@options
        (:method-combination cc-standard))
-     (setf (fdefinition/cc ',name 'defmethod/cc) t)))
+     (eval-when (:compile-toplevel :load-toplevel :execute)
+       (setf (fdefinition/cc ',name 'defmethod/cc) t))))
 
 ; for emacs:  (setf (get 'defmethod/cc 'common-lisp-indent-function) 'lisp-indent-defmethod)
 
