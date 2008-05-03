@@ -74,7 +74,7 @@
                                       lex-env dyn-env))
 
       ((and (eql 'call-next-method operator)
-            (second (multiple-value-list (lookup lex-env :next-method t))))
+            (nth-value 1 (lookup lex-env :next-method t)))
        (aif (lookup lex-env :next-method t)
             (evaluate-arguments-then-apply (lambda (args)
                                              (apply-lambda/cc it args dyn-env k))
@@ -82,7 +82,7 @@
             (error "no next method")))
 
       ((and (eql 'next-method-p operator)
-            (second (multiple-value-list (lookup lex-env :next-method t))))
+            (nth-value 1 (lookup lex-env :next-method t)))
        (kontinue k (lookup lex-env :next-method t)))
 
       ((eql 'funcall operator)

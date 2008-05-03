@@ -38,7 +38,7 @@
            (body (cdr args))
            ((:values body declarations documentation) (parse-body body :documentation #t :whole whole)))
       `(progn
-         (unless (eq 'defmethod/cc (second (multiple-value-list (fdefinition/cc ',name))))
+         (unless (eq 'defmethod/cc (nth-value 1 (fdefinition/cc ',name)))
            (setf (fdefinition/cc ',name 'defmethod/cc) t)
            (defgeneric/cc ,name ,(if arguments
                                      (convert-to-generic-lambda-list arguments)
