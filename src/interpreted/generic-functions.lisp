@@ -20,7 +20,7 @@
 
 (defmacro defgeneric/cc (name args &rest options)
   "Trivial wrapper around defgeneric designed to alert readers that these methods are cc methods."
-  (assert (not (find :method options :key #'first)) () "TODO: defgeneric/cc does not walk the :method entries yet, use standalone defmethod/cc's for now")
+  (assert (not (find :method options :key #'first)) () "FIXME: defgeneric/cc does not walk the :method entries yet, use standalone defmethod/cc's for now")
   `(progn
      (defgeneric ,name ,args
        ,@options

@@ -303,6 +303,7 @@
 
 (defmethod/cc test-generic/cc3 :around (a)
   (let/cc k (cons 'around k))
+  ;; TODO simply (call-next-method) should work
   (call-next-method a))
 
 (defmethod/cc test-generic/cc3 :after (a)
