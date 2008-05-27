@@ -167,7 +167,7 @@ evaluating and what it returns.")
   (declare (ignore lex-env dyn-env k))
   (error "No EVALUATE/CC method defined for ~S." form))
 
-(defmethod evaluate/cc :around ((form form) lex-env dyn-env k)
+(defmethod evaluate/cc :around ((form walked-form) lex-env dyn-env k)
   (declare (ignore lex-env dyn-env k))
   (trace-statement "Evaluating ~S." (source-of form))
   (call-next-method))

@@ -84,7 +84,7 @@
 ;; these variables are captured from the caller normal lisp code and stored within
 ;; the continuation. The mixin might be a binding-form-mixin and implicit-progn-with-declare-mixin.
 (defun import-specials (mixin dyn-env)
-  (dolist (declaration (declares mixin))
+  (dolist (declaration (declares-of mixin))
     (let ((name (name-of declaration)))
       (if (and (typep declaration 'special-variable-declaration-form)
                (or (not (typep mixin 'binding-form-mixin))
@@ -125,7 +125,7 @@
   (or (find-if (lambda (declaration)
                  (and (typep declaration 'special-variable-declaration-form)
                       (eq (name-of declaration) var)))
-               (declares declares-mixin))
+               (declares-of declares-mixin))
       (boundp var)
       ;; This is the only portable way to check if a symbol is
       ;; declared special, without being boundp, i.e. (defvar 'foo).
