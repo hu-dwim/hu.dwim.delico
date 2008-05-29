@@ -27,13 +27,13 @@
 
 (def constructor closure/cc
   (closer-mop:set-funcallable-instance-function
-   self
-   (lambda (&rest args)
-     (drive-interpreter/cc
-      (apply-lambda/cc self
-                       args
-                       '()
-                       *toplevel-k*)))))
+    -self-
+    (lambda (&rest args)
+      (drive-interpreter/cc
+       (apply-lambda/cc -self-
+                   args
+                   '()
+                   *toplevel-k*)))))
 
 (def (function i) make-closure/cc (code &optional (environment (list)))
   (make-instance 'closure/cc :code code :environment environment))
