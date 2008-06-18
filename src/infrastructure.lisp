@@ -13,3 +13,7 @@
 (defun walk-form (form &optional parent (env (make-walk-environment)))
   (with-walker-configuration (:undefined-reference-handler 'undefined-reference-handler)
     (cl-walker:walk-form form parent env)))
+
+(def (function e) continuationp (k)
+  (and (consp k)
+       (eql (car k) 'k-for-evaluate-progn/cc)))
