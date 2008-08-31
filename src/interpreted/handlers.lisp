@@ -14,7 +14,7 @@
   (declare (ignore dyn-env))
   (kontinue k (funcall (first (lookup lex-env :lexical-let (name-of node) :error-p t)))))
 
-(defmethod evaluate/cc ((node free-variable-reference-form) lex-env dyn-env k)
+(defmethod evaluate/cc ((node special-variable-reference-form) lex-env dyn-env k)
   (declare (ignore lex-env))
   (multiple-value-bind (value foundp)
       (lookup dyn-env :let (name-of node))
@@ -267,7 +267,7 @@
                    :of-type :let
                    :kontinue-with k-for-walked-lexical-setq)
          (error "What?! Couldn't find the lexical variable ~S in the cc evaluator's environment?!" variable-name))
-        (free-variable-reference-form
+        (special-variable-reference-form
          (if-found :in-env dyn-env
                    :of-type :let
                    :kontinue-with k-for-special-setq)
