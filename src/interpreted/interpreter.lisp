@@ -74,10 +74,12 @@ Within the code of BODY almost all common lisp forms maintain their normal seman
     (setf evaluate-env `(list ,@(nreverse evaluate-env)))
     (bind ((walked-form (walk-form `(locally ,@body) nil env)))
       (assert (typep walked-form 'locally-form))
-      `(drive-interpreter/cc
-        (evaluate/cc ,walked-form
-                     ,evaluate-env nil
-                     *toplevel-k*)))))
+      `(bind ((walked-form ,walked-form))
+         (drive-interpreter/cc
+          (evaluate/cc walked-form
+                       ,evaluate-env
+                       (import-specials walked-form nil)
+                       +toplevel-k+))))))
 
 (defun kall (k &optional (primary-value nil primary-value-p)
                &rest other-values)
@@ -192,4 +194,4 @@ evaluating and what it returns.")
   (klambda (value other-values)
     (throw 'done (values-list (cons value other-values)))))
 
-(defparameter *toplevel-k* '(toplevel-k))
+(define-constant +toplevel-k+ '(toplevel-k) :test #'equal)

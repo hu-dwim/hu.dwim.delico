@@ -33,7 +33,7 @@
        (apply-lambda/cc -self-
                    args
                    '()
-                   *toplevel-k*)))))
+                   +toplevel-k+)))))
 
 (def (function i) make-closure/cc (code &optional (environment (list)))
   (make-instance 'closure/cc :code code :environment environment))
