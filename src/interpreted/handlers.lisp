@@ -228,10 +228,17 @@
 ;;;; MULTIPLE-VALUE-PROG1
 
 (defmethod evaluate/cc ((node multiple-value-prog1-form) lex-env dyn-env k)
-  (multiple-value-prog1
-      (evaluate/cc (first-form-of node) lex-env dyn-env k)
-    (evaluate-progn/cc (other-forms-of node) lex-env dyn-env
-                       `(k-for-evaluate-progn/cc ,(other-forms-of node) ,lex-env ,dyn-env ,k))))
+  (evaluate/cc (first-form-of node) lex-env dyn-env
+               `(k-for-multiple-value-prog1/cc-other-forms ,(other-forms-of node) ,lex-env ,dyn-env ,k)))
+
+(defk k-for-multiple-value-prog1/cc-other-forms (other-forms lex-env dyn-env k)
+    (value other-values)
+  (evaluate-progn/cc other-forms lex-env dyn-env
+                     `(k-for-multiple-value-prog1/cc-result ,value ,other-values ,lex-env ,dyn-env ,k)))
+
+(defk k-for-multiple-value-prog1/cc-result (value other-values lex-env dyn-env k)
+    ()
+  (apply #'kontinue k value other-values))
 
 ;;;; SETQ
 
