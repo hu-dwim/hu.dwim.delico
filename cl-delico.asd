@@ -57,7 +57,8 @@
                )
   :components ((:module "tests"
                         :components ((:file "package")
-                                     (:file "interpreted" :depends-on ("package"))))))
+                                     (:file "interpreted" :depends-on ("package"))
+                                     (:file "special-variables" :depends-on ("package"))))))
 
 (defmethod asdf:perform :around ((op operation) (system delico-test-system))
   (progv
