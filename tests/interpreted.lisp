@@ -25,13 +25,13 @@
   (bind ((run #f)
          (k (with-call/cc
               (multiple-value-prog1
-                  (let/cc k k)
+                  (values (let/cc k k) "second value" "third-value")
+                (length "foo")
                 (setf run #t)))))
     (is (not run))
-    (is (= 42 (kall k 42)))
-    (with-expected-failures
-      ;; TODO unwalked lexical variable setting is broken for now
-      (is run))))
+    (is (equalp '(42 "second value" "third-value")
+                (multiple-value-list (kall k 42))))
+    (is run)))
 
 (deftest test/interpreted/let ()
   (is (= 1 (with-call/cc
