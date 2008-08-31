@@ -228,7 +228,7 @@
 ;;;; MULTIPLE-VALUE-PROG1
 
 (defmethod evaluate/cc ((node multiple-value-prog1-form) lex-env dyn-env k)
-  (prog1
+  (multiple-value-prog1
       (evaluate/cc (first-form-of node) lex-env dyn-env k)
     (evaluate-progn/cc (other-forms-of node) lex-env dyn-env
                        `(k-for-evaluate-progn/cc ,(other-forms-of node) ,lex-env ,dyn-env ,k))))

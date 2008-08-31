@@ -53,9 +53,10 @@
 Within the code of BODY almost all common lisp forms maintain their normal semantics. The following special forms are allowed:
 
 \(call/cc LAMBDA) - LAMBDA, a one argument function, will be passed a continuation. This object may then be passed to the function KALL which will cause execution to resume around the call/cc form."
-  (let ((walkenv (make-walk-environment lexenv))
-        (evaluate-env nil))
-    (dolist* ((type name &rest data) (car walkenv))
+  (bind ((env (make-walk-environment lexenv))
+         (walkenv (car env))
+         (evaluate-env nil))
+    (dolist* ((type name &rest data) walkenv)
       (declare (ignore data))
       (when (eql :unwalked-variable type)
         (push (list 'list
@@ -71,13 +72,12 @@ Within the code of BODY almost all common lisp forms maintain their normal seman
                       `(lambda (,v) (setf ,name ,v))))
               evaluate-env)))
     (setf evaluate-env `(list ,@(nreverse evaluate-env)))
-    `(drive-interpreter/cc
-      (evaluate/cc ,(walk-form (if (rest body)
-                                   `(progn ,@body)
-                                   (first body))
-                               nil walkenv)
-                   ,evaluate-env nil
-                   *toplevel-k*))))
+    (bind ((walked-form (walk-form `(locally ,@body) nil env)))
+      (assert (typep walked-form 'locally-form))
+      `(drive-interpreter/cc
+        (evaluate/cc ,walked-form
+                     ,evaluate-env nil
+                     *toplevel-k*)))))
 
 (defun kall (k &optional (primary-value nil primary-value-p)
                &rest other-values)
