@@ -21,6 +21,4 @@
 
 (in-package :cl-delico-test)
 
-(in-root-suite)
-
-(defsuite* test)
+(defsuite* (test :in root-suite))
