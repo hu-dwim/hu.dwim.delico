@@ -1,6 +1,6 @@
 ;;;; -*- lisp -*-
 
-(in-package :cl-delico)
+(in-package :hu.dwim.delico)
 
 ;;;; * A Common Lisp interpreter with support for continuations.
 

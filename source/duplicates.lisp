@@ -1,10 +1,10 @@
 ;;; -*- mode: Lisp; Syntax: Common-Lisp; -*-
 ;;;
-;;; Copyright (c) 2008 by the authors.
+;;; Copyright (c) 2009 by the authors.
 ;;;
 ;;; See COPYING for details.
 
-(in-package :cl-delico)
+(in-package :hu.dwim.delico)
 
 (defmacro if-bind (var test &body then/else)
   (assert (first then/else)
@@ -55,14 +55,14 @@ that it creates a fresh binding."
   "Returns a list of symbols representing the names of the
   variables bound by the lambda list LAMBDA-LIST."
   (mapcan (lambda (argument)
-	    (let ((vars '()))
-	      (dolist (slot-name '(cl-walker::name cl-walker::supplied-p-parameter))
-		(awhen (and (slot-exists-p argument slot-name)
-			    (slot-boundp   argument slot-name)
-			    (slot-value    argument slot-name))
-		  (push it vars)))
-	      (nreverse vars)))
-	  (walk-lambda-list lambda-list nil (make-walk-environment) :allow-specializers allow-specializers)))
+            (let ((vars '()))
+              (dolist (slot-name '(hu.dwim.walker::name hu.dwim.walker::supplied-p-parameter))
+                (awhen (and (slot-exists-p argument slot-name)
+                            (slot-boundp   argument slot-name)
+                            (slot-value    argument slot-name))
+                  (push it vars)))
+              (nreverse vars)))
+          (walk-lambda-list lambda-list nil (make-walk-environment) :allow-specializers allow-specializers)))
 
 (defun convert-to-generic-lambda-list (defmethod-lambda-list)
   (loop

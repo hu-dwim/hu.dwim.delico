@@ -1,6 +1,6 @@
 ;;;; -*- lisp -*-
 
-(in-package :cl-delico-test)
+(in-package :hu.dwim.delico.test)
 
 (defsuite* (test/special-variables :in test))
 

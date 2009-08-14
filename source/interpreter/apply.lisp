@@ -1,10 +1,10 @@
 ;;; -*- mode: Lisp; Syntax: Common-Lisp; -*-
 ;;;
-;;; Copyright (c) 2008 by the authors.
+;;; Copyright (c) 2009 by the authors.
 ;;;
 ;;; See COPYING for details.
 
-(in-package :cl-delico)
+(in-package :hu.dwim.delico)
 
 (defmethod evaluate/cc ((node free-function-object-form) lex-env dyn-env k)
   (declare (ignore lex-env dyn-env))

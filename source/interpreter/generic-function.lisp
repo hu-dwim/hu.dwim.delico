@@ -1,10 +1,10 @@
 ;;; -*- mode: Lisp; Syntax: Common-Lisp; -*-
 ;;;
-;;; Copyright (c) 2008 by the authors.
+;;; Copyright (c) 2009 by the authors.
 ;;;
 ;;; See COPYING for details.
 
-(in-package :cl-delico)
+(in-package :hu.dwim.delico)
 
 (def (constant :test 'equal) +defun-stub-error-message+ "This is only a compile-time stub, normally you shouldn't be able to call it")
 
@@ -94,18 +94,18 @@
              (ecase order
                (:most-specific-first methods)
                (:most-specific-last (reverse methods))))
-	   (primary-wrap (methods &optional nextmethod)
-	     (case (length methods)
-	       (1 `(closure-with-nextmethod
-		    (call-method ,(first methods))
-		    ,nextmethod))
-	       (t `(closure-with-nextmethod
-		    (call-method ,(first methods))
-		    ,(primary-wrap (cdr methods) nextmethod)))))
-	   (call-methods (methods)
-	     `(list ,@(loop
-			 for m in methods
-			 collect `(call-method ,m)))))
+           (primary-wrap (methods &optional nextmethod)
+             (case (length methods)
+               (1 `(closure-with-nextmethod
+                    (call-method ,(first methods))
+                    ,nextmethod))
+               (t `(closure-with-nextmethod
+                    (call-method ,(first methods))
+                    ,(primary-wrap (cdr methods) nextmethod)))))
+           (call-methods (methods)
+             `(list ,@(loop
+                         for m in methods
+                         collect `(call-method ,m)))))
     (let* (;; reorder the methods based on the -order arguments
            (around  (effective-order around around-order))
            (before  (effective-order before before-order))

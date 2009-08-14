@@ -1,6 +1,6 @@
 ;;;; -*- lisp -*-
 
-(in-package :cl-delico-test)
+(in-package :hu.dwim.delico.test)
 
 (defsuite* (test/interpreted :in test))
 
@@ -35,10 +35,10 @@
 
 (deftest test/interpreted/let ()
   (is (= 1 (with-call/cc
-	    (let ()
+            (let ()
               1))))
   (is (= 1 (with-call/cc
-	    (let ((a 1))
+            (let ((a 1))
               a))))
   (is (= 1 (with-call/cc
              (let ((a 1))
@@ -78,15 +78,15 @@
 (deftest test/interpreted/let* ()
   (with-call/cc
     (let* ((a 1)
-	   (b a))
+           (b a))
       (is (= 1 a))
       (is (= 1 b))))
   (with-call/cc
    (let ((a 0)
-	 (b 1))
+         (b 1))
      (declare (ignore a))
      (let* ((a b)
-	    (b a))
+            (b a))
        (is (= a 1))
        (is (= b 1))
        (setq a 47)
