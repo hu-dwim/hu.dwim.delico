@@ -10,8 +10,13 @@
   (unless (member name '(call/cc))
     (hu.dwim.walker::undefined-reference-handler type name)))
 
+(defun function-name? (name)
+  (or (hu.dwim.walker::%function-name? name)
+      (gethash name *cc-functions*)))
+
 (defun walk-form (form &optional parent (env (make-walk-environment)))
-  (with-walker-configuration (:undefined-reference-handler 'undefined-reference-handler)
+  (with-walker-configuration (:undefined-reference-handler 'undefined-reference-handler
+                              :function-name? 'function-name?)
     (hu.dwim.walker:walk-form form parent env)))
 
 (def (function e) continuationp (k)
