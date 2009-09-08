@@ -107,6 +107,10 @@ semantics."
 (def (function e) (setf fdefinition/cc) (closure-object function-name &optional (type 'defun/cc))
   (setf (gethash function-name *cc-functions*) (list closure-object type)))
 
+(def function function-name? (name)
+  (or (hu.dwim.walker::%function-name? name)
+      (gethash name *cc-functions*)))
+
 (defvar *debug-evaluate/cc* nil
   "When non NIL the evaluator will print, at each evaluation step, what it's evaluating and the value passed in from the previous step.
 
