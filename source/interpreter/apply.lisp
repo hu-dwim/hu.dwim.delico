@@ -50,7 +50,7 @@
     (value other-values)
   (if *call/cc-returns*
       (kontinue k value other-values)
-      (throw 'done (values-list (cons value other-values)) )))
+      (throw 'done (values-list (cons value other-values)))))
 
 ;;;; apply'ing a free (global) function
 

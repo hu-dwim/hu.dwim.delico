@@ -124,22 +124,13 @@
             (setf dyn-env (register dyn-env :let var value))
             (setf lex-env (register lex-env :let var value))))))
 
-;; TODO rename to special-variable-form?
+;; TODO rename to something nicer, but special-variable-name? is used up by cl-walker
 (defun special-var-p (var declares-mixin)
   (or (find-if (lambda (declaration)
                  (and (typep declaration 'special-variable-declaration-form)
                       (eq (name-of declaration) var)))
                (declares-of declares-mixin))
-      (boundp var)
-      ;; This is the only portable way to check if a symbol is
-      ;; declared special, without being boundp, i.e. (defvar 'foo).
-      ;; Maybe we should make it optional with a compile-time flag?
-      #+nil(eval `((lambda ()
-                (flet ((func ()
-                         (symbol-value ',var)))
-                  (let ((,var t))
-                    (declare (ignorable ,var))
-                    (ignore-errors (func)))))))))
+      (cl-walker:special-variable-name? var)))
 
 (defmethod evaluate/cc ((node let*-form) lex-env dyn-env k)
   (evaluate-let*/cc (bindings-of node) (body-of node) lex-env (import-specials node dyn-env) k))
