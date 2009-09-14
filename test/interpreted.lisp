@@ -411,3 +411,8 @@
               (with-call/cc
                 (call/cc (lambda (k)
                            (values 1 2 3))))))))
+
+(deftest test/interpreted/load-time-value ()
+  (is (equal (list 1 2 3)
+             (with-call/cc
+               (load-time-value (list 1 2 3) t)))))
