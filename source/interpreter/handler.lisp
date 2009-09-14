@@ -120,24 +120,23 @@
            ,lex-env ,dyn-env ,k)))
       (dolist* ((var . value) evaluated-bindings
                 (evaluate-progn/cc body lex-env dyn-env k))
-        (if (special-var-p var (parent-of (first body)))
+        (if (special-variable? var (parent-of (first body)))
             (setf dyn-env (register dyn-env :let var value))
             (setf lex-env (register lex-env :let var value))))))
 
-;; TODO rename to something nicer, but special-variable-name? is used up by cl-walker
-(defun special-var-p (var declares-mixin)
+(defun special-variable? (var declares-mixin)
   (or (find-if (lambda (declaration)
                  (and (typep declaration 'special-variable-declaration-form)
                       (eq (name-of declaration) var)))
                (declares-of declares-mixin))
-      (cl-walker:special-variable-name? var)))
+      (special-variable-name? var)))
 
 (defmethod evaluate/cc ((node let*-form) lex-env dyn-env k)
   (evaluate-let*/cc (bindings-of node) (body-of node) lex-env (import-specials node dyn-env) k))
 
 (defk k-for-evaluate-let*/cc (var bindings body lex-env dyn-env k)
     (value)
-  (if (special-var-p var (parent-of (first body)))
+  (if (special-variable? var (parent-of (first body)))
       (evaluate-let*/cc bindings body
                         lex-env
                         (register dyn-env :let var value)
