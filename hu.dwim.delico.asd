@@ -26,7 +26,7 @@
                              (:module "interpreter"
                                       :depends-on ("package" "duplicates" "infrastructure")
                                       :components ((:file "interpreter")
-                                                   (:file "handler")
-                                                   (:file "apply")
-                                                   (:file "generic-function")
-                                                   (:file "common-lisp-cc")))))))
+                                                   (:file "handler" :depends-on ("interpreter"))
+                                                   (:file "apply" :depends-on ("interpreter"))
+                                                   (:file "generic-function" :depends-on ("interpreter"))
+                                                   (:file "common-lisp-cc" :depends-on ("interpreter"))))))))
