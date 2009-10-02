@@ -416,3 +416,20 @@
   (is (equal (list 1 2 3)
              (with-call/cc
                (load-time-value (list 1 2 3) t)))))
+
+#+unix
+(deftest test/interpreted/macrolet-saves-closure-into-fasl-bug ()
+  (bind ((lisp-filename "/tmp/____macrolet-into-fasl-bug.lisp")
+         (fasl-filename "/tmp/____macrolet-into-fasl-bug.fasl"))
+    (unwind-protect
+         (progn
+           (write-string-into-file "(in-package :hu.dwim.delico.test)
+                             (with-call/cc
+                               (macrolet ((foo (x)
+                                            `(+ 1 ,x)))
+                                 (foo 42)))"
+                                   lisp-filename
+                                   :if-exists :supersede)
+           (is (not (nth-value 2 (compile-file lisp-filename :output-file fasl-filename)))))
+      (ignore-errors (delete-file lisp-filename))
+      (ignore-errors (delete-file fasl-filename)))))
