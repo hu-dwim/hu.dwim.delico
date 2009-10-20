@@ -18,4 +18,5 @@
   :depends-on (:hu.dwim.delico.test
                :hu.dwim.wui)
   :components ((:module "documentation"
-                :components ((:file "package")))))
+                :components ((:file "delico" :depends-on ("package"))
+                             (:file "package")))))
