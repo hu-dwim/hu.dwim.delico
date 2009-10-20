@@ -14,7 +14,7 @@
            "Levente Mészáros <levente.meszaros@gmail.com>")
   :licence "BSD / Public domain"
   :description "Delimited continuation"
-  :depends-on (:hu.dwim.common-lisp
+  :depends-on (:hu.dwim.common
                :hu.dwim.def
                :hu.dwim.syntax-sugar+swank
                :hu.dwim.walker)
