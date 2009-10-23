@@ -6,7 +6,7 @@
 
 (in-package :hu.dwim.delico)
 
-(def (constant :test 'equal) +defun-stub-error-message+ "This is only a compile-time stub, normally you shouldn't be able to call it")
+(def constant +defun-stub-error-message+ "This is only a compile-time stub, normally you shouldn't be able to call it")
 
 (defmacro defun/cc (name arguments &body body)
   `(progn
