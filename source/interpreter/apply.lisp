@@ -274,12 +274,11 @@
                                   ,operator ,head ,remaining-arguments
                                   ,lex-env ,dyn-env ,k)))
                  ;; keyword passed in explicitly.
-                 (progn
-                   (let ((value (getf remaining-arguments keyword-name)))
-                     (remf remaining-arguments keyword-name)
-                     (setf lex-env (register lex-env :let (name-of parameter) value))
-                   (awhen (supplied-p-parameter parameter)
-                     (setf lex-env (register lex-env :let it t))))))))
+                 (let ((value (getf remaining-arguments keyword-name)))
+                   (remf remaining-arguments keyword-name)
+                   (setf lex-env (register lex-env :let (name-of parameter) value))
+                   (awhen (supplied-p-parameter-name-of parameter)
+                     (setf lex-env (register lex-env :let it t)))))))
           (allow-other-keys-function-argument-form
            (when (cdr remaining-parameters)
              (error "Bad lambda list: ~S" (arguments-of (code-of operator))))

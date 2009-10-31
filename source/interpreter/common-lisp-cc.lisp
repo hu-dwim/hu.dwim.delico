@@ -9,6 +9,7 @@
 ;;;; ** CC Version of some common lisp functions.
 
 (defmacro redefun/cc (name args &body body)
+  ;; TODO &environment?
   `(progn
      (setf (fdefinition/cc ',name)
            (make-closure/cc (walk-form '(lambda ,args

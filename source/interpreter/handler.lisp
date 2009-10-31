@@ -84,9 +84,9 @@
 
 ;;;; LET/LET*
 
-;; returns a dynamic environment that holds the special variables imported for let
-;; these variables are captured from the caller normal lisp code and stored within
-;; the continuation. The mixin might be a binding-form-mixin and implicit-progn-with-declare-mixin.
+;; Returns a dynamic environment that holds the special variables imported for LET.
+;; These variables are captured from the caller normal lisp code and stored within
+;; the continuation. The mixin might be a lexibinder-form and implicit-progn-with-declarations-mixin
 (defun import-specials (mixin dyn-env)
   (dolist (declaration (declarations-of mixin))
     (let ((name (name-of declaration)))

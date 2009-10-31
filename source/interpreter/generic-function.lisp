@@ -9,6 +9,7 @@
 (def constant +defun-stub-error-message+ "This is only a compile-time stub, normally you shouldn't be able to call it")
 
 (defmacro defun/cc (name arguments &body body)
+  ;; TODO &environment?
   `(progn
      (eval-when (:compile-toplevel)
        #+sbcl(sb-c:%compiler-defun ',name nil t))
