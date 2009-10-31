@@ -88,13 +88,13 @@
 ;; these variables are captured from the caller normal lisp code and stored within
 ;; the continuation. The mixin might be a binding-form-mixin and implicit-progn-with-declare-mixin.
 (defun import-specials (mixin dyn-env)
-  (dolist (declaration (declares-of mixin))
+  (dolist (declaration (declarations-of mixin))
     (let ((name (name-of declaration)))
-      (if (and (typep declaration 'special-variable-declaration-form)
-               (or (not (typep mixin 'binding-form-mixin))
-                   (not (find name (bindings-of mixin) :key 'first)))
-               (not (lookup dyn-env :let name)))
-          (setf dyn-env (register dyn-env :let name (symbol-value name))))))
+      (when (and (typep declaration 'special-variable-declaration-form)
+                 (or (not (typep mixin 'binder-form-mixin))
+                     (not (find name (bindings-of mixin) :key #'name-of)))
+                 (not (lookup dyn-env :let name)))
+        (setf dyn-env (register dyn-env :let name (symbol-value name))))))
   dyn-env)
 
 (defmethod evaluate/cc ((node let-form) lex-env dyn-env k)
@@ -108,7 +108,9 @@
 
 (defun evaluate-let/cc (remaining-bindings evaluated-bindings body lex-env dyn-env k)
   (if remaining-bindings
-      (bind (((var . initial-value) (car remaining-bindings)))
+      (bind ((binding (car remaining-bindings))
+             (var (name-of binding))
+             (initial-value (initial-value-of binding)))
         (evaluate/cc
          initial-value
          lex-env dyn-env
@@ -128,7 +130,7 @@
   (or (find-if (lambda (declaration)
                  (and (typep declaration 'special-variable-declaration-form)
                       (eq (name-of declaration) var)))
-               (declares-of declares-mixin))
+               (declarations-of declares-mixin))
       (special-variable-name? var)))
 
 (defmethod evaluate/cc ((node let*-form) lex-env dyn-env k)
@@ -148,10 +150,9 @@
 
 (defun evaluate-let*/cc (bindings body lex-env dyn-env k)
   (if bindings
-      (destructuring-bind (var . initial-value)
-          (car bindings)
-        (evaluate/cc initial-value lex-env dyn-env
-                      `(k-for-evaluate-let*/cc ,var ,(cdr bindings) ,body ,lex-env ,dyn-env ,k)))
+      (bind ((binding (car bindings)))
+        (evaluate/cc (initial-value-of binding) lex-env dyn-env
+                     `(k-for-evaluate-let*/cc ,(name-of binding) ,(cdr bindings) ,body ,lex-env ,dyn-env ,k)))
       (evaluate-progn/cc body lex-env dyn-env k)))
 
 ;;;; IF

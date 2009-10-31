@@ -222,18 +222,18 @@
           (if remaining-arguments
               (progn
                 (setf lex-env (register lex-env :let (name-of parameter) (pop remaining-arguments)))
-                (when (supplied-p-parameter parameter)
-                  (setf lex-env (register lex-env :let (supplied-p-parameter parameter) t))))
+                (when (supplied-p-parameter-name-of parameter)
+                  (setf lex-env (register lex-env :let (supplied-p-parameter-name-of parameter) t))))
               (return-from apply-lambda/cc/optional
                 ;; we need to evaluate a default-value, since this may
                 ;; contain call/cc we need to setup the continuation
                 ;; and let things go from there (hence the return-from)
-                (evaluate/cc (default-value-of parameter) lex-env dyn-env
-                             `(k-for-apply/cc/optional-argument-default-value
-                               ;; remaining-arguments is, by
-                               ;; definition, NIL so we needn't pass
-                               ;; it here.
-                               ,operator ,head ,lex-env ,dyn-env ,k)))))
+                (bind ((k `(k-for-apply/cc/optional-argument-default-value
+                            ;; remaining-arguments is, by definition, NIL so we needn't pass it here.
+                            ,operator ,head ,lex-env ,dyn-env ,k)))
+                  (aif (default-value-of parameter)
+                       (evaluate/cc it lex-env dyn-env k)
+                       (kontinue k))))))
          ((or keyword-function-argument-form allow-other-keys-function-argument-form)
           ;; done with the optional args
           (done head)))

@@ -50,7 +50,16 @@
            ;; the walked code will not reference the arguments because this defmethod will be used
            ;; as a colsure/cc factory, so make them all ignored.
            ,(when arguments
-             `(declare (ignore ,@(extract-argument-names arguments :allow-specializers t))))
+             `(declare (ignore ,@(bind (((:values requireds optionals rest keywords)
+                                         (parse-ordinary-lambda-list arguments :allow-specializers t)))
+                                   (append (mapcar (lambda (required)
+                                                     (if (consp required)
+                                                         (first required)
+                                                         required))
+                                                   requireds)
+                                           (mapcar #'first optionals)
+                                           (ensure-list rest)
+                                           (mapcar #'cadar keywords))))))
            (make-closure/cc
             ;; TODO make sure that the compile-time walked forms are not modified anywhere
             ,(walk-form `(lambda ,(clean-argument-list arguments)
@@ -58,7 +67,7 @@
                              (locally
                                  ,@declarations
                                ,@body)))
-                        nil (make-walk-environment lexenv))))))))
+                        :environment (make-walk-environment lexenv))))))))
 
 ;;;; CC-STANDARD (standard-combination for cc methods)
 

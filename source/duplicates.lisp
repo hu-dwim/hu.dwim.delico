@@ -21,48 +21,25 @@ that it creates a fresh binding."
          (let ((,iterator ,iterator))
            ,@body))))
 
-;; from arnesi
-;; TODO delme, use the stefil lambda walker
-(defun extract-argument-names (lambda-list &key allow-specializers)
-  "Returns a list of symbols representing the names of the
-  variables bound by the lambda list LAMBDA-LIST."
-  (mapcan (lambda (argument)
-            (let ((vars '()))
-              (dolist (slot-name '(hu.dwim.walker::name hu.dwim.walker::supplied-p-parameter))
-                (awhen (and (slot-exists-p argument slot-name)
-                            (slot-boundp   argument slot-name)
-                            (slot-value    argument slot-name))
-                  (push it vars)))
-              (nreverse vars)))
-          (walk-lambda-list lambda-list nil (make-walk-environment) :allow-specializers allow-specializers)))
-
 (defun convert-to-generic-lambda-list (defmethod-lambda-list)
-  (loop
-     with generic-lambda-list = '()
-     for arg in (walk-lambda-list defmethod-lambda-list
-                                  nil (make-walk-environment)
-                                  :allow-specializers t)
-     do (etypecase arg
-          ((or required-function-argument-form
-               specialized-function-argument-form)
-           (push (name-of arg) generic-lambda-list))
-          (keyword-function-argument-form
-           (pushnew '&key generic-lambda-list)
-           (aif (keyword-name-of arg)
-                (push (list (list it (name-of arg)))
-                      generic-lambda-list)
-                (push (list (name-of arg)) generic-lambda-list)))
-          (rest-function-argument-form
-           (push '&rest generic-lambda-list)
-           (push (name-of arg) generic-lambda-list))
-          (optional-function-argument-form
-           (pushnew '&optional generic-lambda-list)
-           (push (name-of arg) generic-lambda-list))
-          (allow-other-keys-function-argument-form
-           (unless (member '&key generic-lambda-list)
-             (push '&key generic-lambda-list))
-           (push '&allow-other-keys generic-lambda-list)))
-     finally (return (nreverse generic-lambda-list))))
+  (bind (((:values requireds optionals rest keywords allow-other-keys?)
+          (parse-ordinary-lambda-list defmethod-lambda-list :allow-specializers t)))
+    (append
+     (mapcar (lambda (required)
+               (if (consp required)
+                   (first required)
+                   required))
+             requireds)
+     (awhen (mapcar #'first optionals)
+       `(&optional ,@it))
+     (when rest
+       `(&rest ,rest))
+     (awhen (mapcar (lambda (keyword)
+                      (list (first keyword)))
+                    keywords)
+       `(&key ,@it))
+     (when allow-other-keys?
+       `(&allow-other-keys)))))
 
 (defun clean-argument-list (lambda-list)
   (loop

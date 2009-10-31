@@ -53,10 +53,9 @@
 Within the code of BODY almost all common lisp forms maintain their normal semantics. The following special forms are allowed:
 
 \(call/cc LAMBDA) - LAMBDA, a one argument function, will be passed a continuation. This object may then be passed to the function KALL which will cause execution to resume around the call/cc form."
-  (bind ((env (make-walk-environment lexenv))
-         (walkenv (car env))
+  (bind ((walkenv (make-walk-environment lexenv))
          (evaluate-env nil))
-    (dolist* ((type name &rest data) walkenv)
+    (dolist* ((type name &rest data) (hu.dwim.walker::env/walked-environment walkenv))
       (declare (ignore data))
       (when (eql :unwalked-variable type)
         (push (list 'list
@@ -72,7 +71,7 @@ Within the code of BODY almost all common lisp forms maintain their normal seman
                       `(lambda (,v) (setf ,name ,v))))
               evaluate-env)))
     (setf evaluate-env `(list ,@(nreverse evaluate-env)))
-    (bind ((walked-form (walk-form `(locally ,@body) nil env)))
+    (bind ((walked-form (walk-form `(locally ,@body) :environment walkenv)))
       (assert (typep walked-form 'locally-form))
       `(bind ((walked-form ,walked-form))
          (drive-interpreter/cc
@@ -95,21 +94,6 @@ semantics."
          (other-values (apply k primary-value other-values))
          (primary-value-p (funcall k primary-value))
          (t (funcall k nil)))))))
-
-(defvar *cc-functions* (make-hash-table :test 'eq))
-
-(def (function e) fmkunbound/cc (function-name)
-  (remhash function-name *cc-functions*))
-
-(def (function e) fdefinition/cc (function-name)
-  (values-list (gethash function-name *cc-functions*)))
-
-(def (function e) (setf fdefinition/cc) (closure-object function-name &optional (type 'defun/cc))
-  (setf (gethash function-name *cc-functions*) (list closure-object type)))
-
-(def function function-name? (name)
-  (or (hu.dwim.walker::%function-name? name)
-      (gethash name *cc-functions*)))
 
 (defvar *debug-evaluate/cc* nil
   "When non NIL the evaluator will print, at each evaluation step, what it's evaluating and the value passed in from the previous step.
