@@ -7,7 +7,8 @@
 (in-package :common-lisp-user)
 
 (defpackage :hu.dwim.delico
-  (:use :hu.dwim.asdf
+  (:use :contextl
+        :hu.dwim.asdf
         :hu.dwim.common
         :hu.dwim.def
         :hu.dwim.syntax-sugar
@@ -26,7 +27,4 @@
            #:defmethod/cc
            #:fmakun-cc
            #:*debug-evaluate/cc*
-           #:*trace-cc*)
-
-  (:shadow #:walk-form
-           #:undefined-reference-handler))
+           #:*trace-cc*))
