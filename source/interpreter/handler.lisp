@@ -67,16 +67,16 @@
 ;;;; FLET/LABELS
 
 (defmethod evaluate/cc ((node flet-form) lex-env dyn-env k)
-  (let ((new-env lex-env))
-    (dolist* ((name . form) (bindings-of node))
-      (setf new-env (register new-env :flet name (make-closure/cc form lex-env))))
+  (bind ((new-env lex-env))
+    (dolist (binding (bindings-of node))
+      (setf new-env (register new-env :flet (name-of binding) (make-closure/cc binding lex-env))))
     (evaluate-progn/cc (body-of node) new-env dyn-env k)))
 
 (defmethod evaluate/cc ((node labels-form) lex-env dyn-env k)
-  (let ((closures '()))
-    (dolist* ((name . form) (bindings-of node))
-      (let ((closure (make-closure/cc form)))
-        (setf lex-env (register lex-env :flet name closure))
+  (bind ((closures '()))
+    (dolist (binding (bindings-of node))
+      (bind ((closure (make-closure/cc binding)))
+        (setf lex-env (register lex-env :flet (name-of binding) closure))
         (push closure closures)))
     (dolist (closure closures)
       (setf (environment-of closure) lex-env))
