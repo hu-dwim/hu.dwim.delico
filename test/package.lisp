@@ -4,11 +4,12 @@
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :common-lisp-user)
+(in-package :hu.dwim.util)
 
-(defpackage :hu.dwim.delico.test
+(def package :hu.dwim.delico.test
   (:use :hu.dwim.common
         :hu.dwim.delico
         :hu.dwim.stefil
         :hu.dwim.syntax-sugar
-        :hu.dwim.walker))
+        :hu.dwim.walker)
+  (:readtable-setup (setup-readtable/same-as-package :hu.dwim.delico)))

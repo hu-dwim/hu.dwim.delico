@@ -4,16 +4,15 @@
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :common-lisp-user)
+(in-package :hu.dwim.util)
 
-(defpackage :hu.dwim.delico
+(def package :hu.dwim.delico
   (:use :contextl
         :hu.dwim.asdf
         :hu.dwim.common
         :hu.dwim.def
         :hu.dwim.syntax-sugar
         :hu.dwim.walker)
-
   (:export #:to-cps
            #:with-call/cc
            #:kall
@@ -27,4 +26,5 @@
            #:defmethod/cc
            #:fmakun-cc
            #:*debug-evaluate/cc*
-           #:*trace-cc*))
+           #:*trace-cc*)
+  (:readtable-setup (enable-standard-hu.dwim-syntaxes)))

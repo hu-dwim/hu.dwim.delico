@@ -15,8 +15,8 @@
            "Tamás Borbély <tomi.borbely@gmail.com>")
   :licence "BSD / Public domain"
   :description "Test suite for hu.dwim.delico"
-  :depends-on (:hu.dwim.def+hu.dwim.stefil
-               :hu.dwim.delico)
+  :depends-on (:hu.dwim.delico
+               :hu.dwim.util.test)
   :components ((:module "test"
                 :components ((:file "interpreted" :depends-on ("suite"))
                              (:file "package")

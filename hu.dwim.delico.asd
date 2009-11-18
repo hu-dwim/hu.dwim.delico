@@ -15,15 +15,12 @@
   :licence "BSD / Public domain"
   :description "Delimited continuation"
   :depends-on (:contextl
-               :hu.dwim.common
-               :hu.dwim.def
-               :hu.dwim.syntax-sugar+swank
+               :hu.dwim.def+hu.dwim.common
                :hu.dwim.walker)
   :components ((:module "source"
                 :components ((:file "package")
-                             (:file "configuration" :depends-on ("package"))
-                             (:file "duplicates" :depends-on ("configuration" "package"))
-                             (:file "infrastructure" :depends-on ("configuration" "package" "duplicates"))
+                             (:file "duplicates" :depends-on ("package"))
+                             (:file "infrastructure" :depends-on ("package" "duplicates"))
                              (:module "interpreter"
                                       :depends-on ("package" "duplicates" "infrastructure")
                                       :components ((:file "interpreter")
