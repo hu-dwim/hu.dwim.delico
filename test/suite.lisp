@@ -6,7 +6,4 @@
 
 (in-package :hu.dwim.delico.test)
 
-(defun setup-readtable ()
-  (enable-sharp-boolean-syntax))
-
 (defsuite* (test :in root-suite))
