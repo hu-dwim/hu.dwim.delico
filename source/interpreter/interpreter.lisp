@@ -106,6 +106,8 @@ If set to :FULL then at each step we print the form, the environment and the con
   (catch 'done
     (loop for thunk = code then (funcall thunk))))
 
+(declaim (ftype (function) call/cc))
+
 (defmacro let/cc (k &body body)
   `(call/cc (lambda (,k) ,@body)))
 
