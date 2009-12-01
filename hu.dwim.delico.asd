@@ -12,8 +12,7 @@
   :class hu.dwim.system
   :author ("Attila Lendvai <attila.lendvai@gmail.com>"
            "Levente Mészáros <levente.meszaros@gmail.com>")
-  :licence "BSD / Public domain"
-  :description "Delimited continuation"
+  :description "Delimited, interpreted shift-reset continuation."
   :depends-on (:contextl
                :hu.dwim.def+hu.dwim.common
                :hu.dwim.walker)
