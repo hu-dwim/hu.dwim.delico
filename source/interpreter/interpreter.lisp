@@ -106,6 +106,7 @@ If set to :FULL then at each step we print the form, the environment and the con
   (catch 'done
     (loop for thunk = code then (funcall thunk))))
 
+;; TODO customize walker instead of this...
 (declaim (ftype (function) call/cc))
 
 (defmacro let/cc (k &body body)
