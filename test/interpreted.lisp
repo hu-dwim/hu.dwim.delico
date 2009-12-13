@@ -406,6 +406,9 @@
                  (values 1 2))))))
 
 (deftest test/interpreted/values-through-call/cc ()
+  (is (equal nil (multiple-value-list
+                  (with-call/cc
+                    (values)))))
   (is (equal (list 1 2 3)
              (multiple-value-list
               (with-call/cc
