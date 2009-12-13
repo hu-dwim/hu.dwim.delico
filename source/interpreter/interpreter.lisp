@@ -182,7 +182,9 @@ evaluating and what it returns.")
     (print-debug-step form lex-env dyn-env k)))
 
 (defun toplevel-k ()
-  (klambda (value other-values)
-    (throw 'done (values-list (cons value other-values)))))
+  (klambda ((value nil valuep) other-values)
+    (throw 'done (if valuep
+                     (values-list (cons value other-values))
+                     (values)))))
 
 (define-constant +toplevel-k+ '(toplevel-k) :test #'equal)
