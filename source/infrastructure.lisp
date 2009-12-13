@@ -29,5 +29,13 @@
       (gethash name *cc-functions*)))
 
 (def (function e) continuationp (k)
-  (and (consp k)
-       (eql (car k) 'k-for-evaluate-progn/cc)))
+  ;; TODO: close enough, eh?
+  (bind ((delico-package (find-package :hu.dwim.delico)))
+    (or (and (symbolp k)
+             (eq delico-package (symbol-package k)))
+        (and (consp k)
+             (symbolp (car k))
+             (eq delico-package (symbol-package (car k)))))))
+
+(def (type e) continuation ()
+  '(satisfies continuationp))
