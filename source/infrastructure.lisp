@@ -6,7 +6,8 @@
 
 (in-package :hu.dwim.delico)
 
-(def layer delico ()
+;; KLUDGE undefined-references are temprorarily ignored, but it should not be the default
+(def layer delico (ignore-undefined-references)
   ())
 
 (def special-variable *cc-functions* (make-hash-table :test 'eq))
