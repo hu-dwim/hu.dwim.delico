@@ -71,7 +71,7 @@ Within the code of BODY almost all common lisp forms maintain their normal seman
                       `(lambda (,v) (setf ,name ,v))))
               evaluate-env)))
     (setf evaluate-env `(list ,@(nreverse evaluate-env)))
-    (bind ((walked-form (walk-form `(locally ,@body) :environment walkenv)))
+    (bind ((walked-form (walk-form/delico `(locally ,@body) :environment walkenv)))
       (assert (typep walked-form 'locally-form))
       `(bind ((walked-form ,walked-form))
          (drive-interpreter/cc
@@ -106,8 +106,9 @@ If set to :FULL then at each step we print the form, the environment and the con
   (catch 'done
     (loop for thunk = code then (funcall thunk))))
 
-;; TODO customize walker instead of this...
-(declaim (ftype (function) call/cc))
+(def layered-method function-name? :in delico (name)
+  (or (member name '(call/cc) :test #'eq)
+      (call-next-layered-method)))
 
 (defmacro let/cc (k &body body)
   `(call/cc (lambda (,k) ,@body)))

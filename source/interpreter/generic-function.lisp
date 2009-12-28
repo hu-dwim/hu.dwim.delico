@@ -15,9 +15,11 @@
        #+sbcl(sb-c:%compiler-defun ',name nil t))
      (eval-when (:load-toplevel :execute)
        (setf (fdefinition/cc ',name 'defun/cc)
-             (make-closure/cc (walk-form '(lambda ,arguments
-                                           (block ,name
-                                             (locally ,@body)))))))))
+             (make-closure/cc
+              (walk-form/delico
+               '(lambda ,arguments
+                 (block ,name
+                   (locally ,@body)))))))))
 
 (defmacro defgeneric/cc (name args &rest options)
   "Trivial wrapper around defgeneric designed to alert readers that these methods are cc methods."
@@ -63,12 +65,12 @@
                                            (mapcar #'cadar keywords))))))
            (make-closure/cc
             ;; TODO make sure that the compile-time walked forms are not modified anywhere
-            ,(walk-form `(lambda ,(clean-argument-list arguments)
-                           (block ,name
-                             (locally
-                                 ,@declarations
-                               ,@body)))
-                        :environment (make-walk-environment lexenv))))))))
+            ,(walk-form/delico `(lambda ,(clean-argument-list arguments)
+                                  (block ,name
+                                    (locally
+                                        ,@declarations
+                                      ,@body)))
+                               :environment (make-walk-environment lexenv))))))))
 
 ;;;; CC-STANDARD (standard-combination for cc methods)
 
@@ -76,19 +78,23 @@
   (make-closure/cc (code-of closure) (register (environment-of closure) :next-method t next)))
 
 (defun closure-with-befores (closure befores)
-  (make-closure/cc (walk-form `(lambda (&rest args)
-                                 ,@(loop
-                                      :for before :in befores
-                                      :collect `(apply ,before args))
-                                 (apply ,closure args)))))
+  (make-closure/cc
+   (walk-form/delico
+    `(lambda (&rest args)
+       ,@(loop
+           :for before :in befores
+           :collect `(apply ,before args))
+       (apply ,closure args)))))
 
 (defun closure-with-afters (closure afters)
-  (make-closure/cc (walk-form `(lambda (&rest args)
-                                 (prog1
-                                     (apply ,closure args)
-                                   ,@(loop
-                                        :for after :in afters
-                                        :collect `(apply ,after args)))))))
+  (make-closure/cc
+   (walk-form/delico
+    `(lambda (&rest args)
+       (prog1
+           (apply ,closure args)
+         ,@(loop
+             :for after :in afters
+             :collect `(apply ,after args)))))))
 
 (define-method-combination cc-standard
     (&key (around-order :most-specific-first)

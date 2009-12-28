@@ -21,12 +21,16 @@
   (setf (gethash function-name *cc-functions*) (list closure-object type)))
 
 (def layered-method hu.dwim.walker::handle-undefined-reference :in delico (type name)
-     (unless (member name '(call/cc))
-       (call-next-layered-method)))
+  (unless (member name '(call/cc))
+    (call-next-layered-method)))
 
 (def layered-method hu.dwim.walker::function-name? :in delico :around (name)
   (or (call-next-layered-method)
       (gethash name *cc-functions*)))
+
+(def function walk-form/delico (form &rest args)
+  (with-active-layers (delico)
+    (apply #'walk-form form args)))
 
 (def (function e) continuationp (k)
   ;; TODO: close enough, eh?

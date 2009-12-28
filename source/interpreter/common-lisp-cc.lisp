@@ -12,8 +12,10 @@
   ;; TODO &environment?
   `(progn
      (setf (fdefinition/cc ',name)
-           (make-closure/cc (walk-form '(lambda ,args
-                                         (block ,name ,@body)))))
+           (make-closure/cc
+            (walk-form/delico
+             '(lambda ,args
+               (block ,name ,@body)))))
      ',name))
 
 (defmacro apply-key (key element)
