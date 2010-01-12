@@ -106,7 +106,7 @@ If set to :FULL then at each step we print the form, the environment and the con
   (catch 'done
     (loop for thunk = code then (funcall thunk))))
 
-(def layered-method function-name? :in delico (name)
+(def layered-method hu.dwim.walker::function-name? :in delico (name)
   (or (member name '(call/cc) :test #'eq)
       (call-next-layered-method)))
 
