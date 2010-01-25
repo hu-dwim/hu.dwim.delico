@@ -14,6 +14,7 @@
            "Levente Mészáros <levente.meszaros@gmail.com>")
   :description "Delimited, interpreted shift-reset continuation."
   :depends-on (:contextl
+               :closer-mop
                :hu.dwim.def+hu.dwim.common
                :hu.dwim.walker)
   :components ((:module "source"
