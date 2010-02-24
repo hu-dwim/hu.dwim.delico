@@ -54,31 +54,31 @@ Within the code of BODY almost all common lisp forms maintain their normal seman
 
 \(call/cc LAMBDA) - LAMBDA, a one argument function, will be passed a continuation. This object may then be passed to the function KALL which will cause execution to resume around the call/cc form."
   (bind ((walkenv (make-walk-environment lexenv))
-         (evaluate-env nil))
-    (dolist* ((type name &rest data) (hu.dwim.walker::env/walked-environment walkenv))
-      (declare (ignore data))
-      (when (eql :unwalked-variable type)
-        (push (list 'list
-                    :lexical-let
-                    `(quote ,name)
-                    ;; NB: this makes the environment, and therefore
-                    ;; continuations, unserializable. we would need to
-                    ;; change this to a regular :let and not allow the
-                    ;; setting of lexical variables.
-                    ;; TODO install a configuration that requires serializable closures and issue a warning in this case here
-                    `(lambda () ,name)
-                    (with-unique-names (v)
-                      `(lambda (,v) (setf ,name ,v))))
-              evaluate-env)))
+         (evaluate-env '())
+         (walked-form (walk-form/delico `(locally ,@body) :environment walkenv)))
+    (check-type walked-form locally-form)
+    (dolist (reference (collect-variable-references walked-form))
+      (when (typep reference 'unwalked-lexical-variable-reference-form)
+        (bind ((name (name-of reference)))
+          (push (list 'list
+                      :lexical-let
+                      `(quote ,name)
+                      ;; NB: this makes the environment, and therefore
+                      ;; continuations, unserializable. we would need to
+                      ;; change this to a regular :let and not allow the
+                      ;; setting of lexical variables.
+                      ;; TODO install a configuration that requires serializable closures and issue a warning in this case here
+                      `(lambda () ,name)
+                      (with-unique-names (v)
+                        `(lambda (,v) (setf ,name ,v))))
+                evaluate-env))))
     (setf evaluate-env `(list ,@(nreverse evaluate-env)))
-    (bind ((walked-form (walk-form/delico `(locally ,@body) :environment walkenv)))
-      (assert (typep walked-form 'locally-form))
-      `(bind ((walked-form ,walked-form))
-         (drive-interpreter/cc
-          (evaluate/cc walked-form
-                       ,evaluate-env
-                       (import-specials walked-form nil)
-                       +toplevel-k+))))))
+    `(bind ((walked-form ,walked-form))
+       (drive-interpreter/cc
+        (evaluate/cc walked-form
+                     ,evaluate-env
+                     (import-specials walked-form nil)
+                     +toplevel-k+)))))
 
 (defun kall (k &optional (primary-value nil primary-value-p)
                &rest other-values)
