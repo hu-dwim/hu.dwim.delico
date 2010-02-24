@@ -8,10 +8,12 @@
 
 (in-package :hu.dwim.asdf)
 
-(defsystem ::hu.dwim.delico.test
+(defsystem :hu.dwim.delico.test
   :class hu.dwim.test-system
-  :depends-on (:hu.dwim.delico
-               :hu.dwim.stefil+hu.dwim.def+swank)
+  :depends-on (:hu.dwim.def
+               :hu.dwim.delico
+               :hu.dwim.stefil+hu.dwim.def+swank
+               :hu.dwim.util)
   :components ((:module "test"
                 :components ((:file "interpreted" :depends-on ("suite"))
                              (:file "package")
