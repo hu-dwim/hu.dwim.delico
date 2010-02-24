@@ -42,9 +42,5 @@
              (symbolp (car k))
              (eq delico-package (symbol-package (car k)))))))
 
-;; TODO delme, update dependencies
-(def (function e) continuationp (k)
-  (continuation? k))
-
 (def (type e) continuation ()
   '(satisfies continuation?))
