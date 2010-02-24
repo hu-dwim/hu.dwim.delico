@@ -33,7 +33,7 @@
   (with-active-layers (delico)
     (apply #'walk-form form args)))
 
-(def (function e) continuationp (k)
+(def (function e) continuation? (k)
   ;; TODO: close enough, eh?
   (bind ((delico-package (find-package :hu.dwim.delico)))
     (or (and (symbolp k)
@@ -42,5 +42,9 @@
              (symbolp (car k))
              (eq delico-package (symbol-package (car k)))))))
 
+;; TODO delme, update dependencies
+(def (function e) continuationp (k)
+  (continuation? k))
+
 (def (type e) continuation ()
-  '(satisfies continuationp))
+  '(satisfies continuation?))
