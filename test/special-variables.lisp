@@ -4,6 +4,9 @@
 
 (defsuite* (test/special-variables :in test))
 
+;; TODO use def
+;; TODO quote stuff and use with-call/cc/test
+
 ;;; special variable handling
 (defun/cc lookup-special-in-defun/cc (stop)
   (declare (special the-spec-var))
