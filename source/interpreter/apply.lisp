@@ -177,7 +177,7 @@
   (trace-statement "Applying cc closure ~S to ~S" (source-of (code-of operator)) effective-arguments)
   (bind ((lex-env (environment-of operator))
          (remaining-arguments effective-arguments)
-         (remaining-parameters (arguments-of (code-of operator))))
+         (remaining-parameters (bindings-of (code-of operator))))
     ;; in this code ARGUMENT refers to the values passed to the
     ;; function. PARAMETER refers to the lambda of the closure
     ;; object. we walk down the parameters and put the arguments in
@@ -234,7 +234,7 @@
                   (aif (default-value-of parameter)
                        (evaluate/cc it lex-env dyn-env k)
                        (kontinue k))))))
-         ((or keyword-function-argument-form allow-other-keys-function-argument-form)
+         ((or keyword-function-argument-form auxiliary-function-argument-form)
           ;; done with the optional args
           (done head)))
        finally (done head))))
@@ -257,7 +257,7 @@
   (loop
      for head on remaining-parameters
      for parameter = (first head)
-     do (typecase parameter
+     do (etypecase parameter
           (keyword-function-argument-form
            (assert (evenp (length remaining-arguments))
                    (remaining-arguments)
@@ -279,12 +279,8 @@
                    (setf lex-env (register lex-env :let (name-of parameter) value))
                    (awhen (supplied-p-parameter-name-of parameter)
                      (setf lex-env (register lex-env :let it t)))))))
-          (allow-other-keys-function-argument-form
-           (when (cdr remaining-parameters)
-             (error "Bad lambda list: ~S" (arguments-of (code-of operator))))
-           (return))
-          (t (unless (null remaining-parameters)
-               (error "Bad lambda list: ~S" (arguments-of (code-of operator)))))))
+          (auxiliary-function-argument-form
+           (not-yet-implemented "&aux in interpreted continuations"))))
   (evaluate-progn/cc (body-of (code-of operator)) lex-env dyn-env k))
 
 (defk k-for-apply-lambda/cc/keyword-default-value
