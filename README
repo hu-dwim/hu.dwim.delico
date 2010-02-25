@@ -1,8 +1,1 @@
-This is a library to do CPS transformation on a delimited area of
-Common Lisp code. The interpreted serializable continuation part of the
-codebase is based on code that was originally written by Marco
-Baringer in his Arnesi library. With his permission it was factored
-out into this library and further developed by Attila Lendvai. Please
-consult the repo history for more details about the credits.
-
-Home: http://common-lisp.net/project/cl-walker/
+http://dwim.hu/project/hu.dwim.delico
