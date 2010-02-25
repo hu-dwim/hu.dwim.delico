@@ -12,6 +12,7 @@
         :hu.dwim.common
         :hu.dwim.def
         :hu.dwim.syntax-sugar
+        :hu.dwim.util
         :hu.dwim.walker)
   (:export #:to-cps
            #:with-call/cc
