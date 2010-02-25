@@ -11,6 +11,7 @@
 (defsystem :hu.dwim.delico.documentation
   :class hu.dwim.documentation-system
   :depends-on (:hu.dwim.delico.test
+               :hu.dwim.walker.documentation
                :hu.dwim.wui)
   :components ((:module "documentation"
                 :components ((:file "delico" :depends-on ("package"))
