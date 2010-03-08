@@ -4,9 +4,9 @@
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :common-lisp-user)
+(in-package :hu.dwim.def)
 
-(defpackage :hu.dwim.delico.documentation
+(def package :hu.dwim.delico.documentation
   (:use :hu.dwim.asdf
         :hu.dwim.common
         :hu.dwim.def
