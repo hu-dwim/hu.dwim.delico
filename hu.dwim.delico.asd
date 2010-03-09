@@ -26,4 +26,4 @@
                                                    (:file "handler" :depends-on ("interpreter"))
                                                    (:file "apply" :depends-on ("interpreter"))
                                                    (:file "generic-function" :depends-on ("interpreter"))
-                                                   (:file "common-lisp-cc" :depends-on ("interpreter"))))))))
+                                                   (:file "common-lisp-cc" :depends-on ("apply" "generic-function"))))))))
