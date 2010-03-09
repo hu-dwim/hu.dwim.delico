@@ -10,7 +10,7 @@
 
 (defmacro redefun/cc (name args &body body)
   ;; TODO &environment?
-  `(progn
+  `(eval-when (:load-toplevel :execute)
      (setf (fdefinition/cc ',name)
            (make-closure/cc
             (walk-form/delico
