@@ -9,9 +9,9 @@
 (def project :hu.dwim.delico :path (system-pathname :hu.dwim.delico))
 
 (def method make-project-tab-pages ((component project/detail/inspector) (project (eql (find-project :hu.dwim.delico))))
-  (append (list (tab-page/widget (:selector (icon switch-to-tab-page :label "User guide"))
+  (append (list (tab-page/widget (:selector (icon/widget switch-to-tab-page :label "User guide"))
                   (make-value-inspector (find-book 'user-guide)))
-                (tab-page/widget (:selector (icon switch-to-tab-page :label "Dictionary"))
+                (tab-page/widget (:selector (icon/widget switch-to-tab-page :label "Dictionary"))
                   (make-value-inspector (mapcar 'find-dictionary '(continuation)))))
           (call-next-method)))
 
