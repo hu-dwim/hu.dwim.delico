@@ -28,8 +28,4 @@
            #:fmakun-cc
            #:*debug-evaluate/cc*
            #:*trace-cc*)
-  (:readtable-setup (enable-standard-hu.dwim-syntaxes)))
-
-;; this is needed on Allegro
-(eval-always
-  (closer-mop:ensure-finalized (find-class 'standard-object)))
+  (:readtable-setup (hu.dwim.util:enable-standard-hu.dwim-syntaxes)))
