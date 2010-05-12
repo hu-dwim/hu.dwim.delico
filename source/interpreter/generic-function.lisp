@@ -8,18 +8,21 @@
 
 (def constant +defun-stub-error-message+ "This is only a compile-time stub, normally you shouldn't be able to call it")
 
-(defmacro defun/cc (name arguments &body body)
-  ;; TODO &environment?
-  `(progn
-     (eval-when (:compile-toplevel)
-       #+sbcl(sb-c:%compiler-defun ',name nil t))
-     (eval-when (:load-toplevel :execute)
-       (setf (fdefinition/cc ',name 'defun/cc)
-             (make-closure/cc
-              (walk-form/delico
-               '(lambda ,arguments
-                 (block ,name
-                   (locally ,@body)))))))))
+(defmacro defun/cc (&whole whole name arguments &body body &environment env)
+  (bind (((:values body declarations doc-string) (parse-body body :documentation #t :whole whole)))
+    (declare (ignore doc-string)) ; TODO
+    `(progn
+       (eval-when (:compile-toplevel)
+         #*((:sbcl (sb-c:%compiler-defun ',name nil t))))
+       (eval-when (:load-toplevel :execute)
+         (setf (fdefinition/cc ',name 'defun/cc)
+               (make-closure/cc
+                (walk-form/delico '(lambda ,arguments
+                                    (declare ,@declarations)
+                                    (block ,name
+                                      ,@body))
+                                  :environment (make-walk-environment ,env))))
+         ',name))))
 
 (defmacro defgeneric/cc (name args &rest options)
   "Trivial wrapper around defgeneric designed to alert readers that these methods are cc methods."
