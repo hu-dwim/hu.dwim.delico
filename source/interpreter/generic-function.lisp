@@ -21,7 +21,9 @@
                                     (declare ,@declarations)
                                     (block ,name
                                       ,@body))
-                                  :environment (make-walk-environment ,env))))
+                                  ;; TODO for this the lexenv object should be writable into fasl's
+                                  ;; :environment (make-walk-environment ,env)
+                                  )))
          ',name))))
 
 (defmacro defgeneric/cc (name args &rest options)
