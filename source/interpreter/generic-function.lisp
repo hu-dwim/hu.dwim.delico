@@ -9,6 +9,7 @@
 (def constant +defun-stub-error-message+ "This is only a compile-time stub, normally you shouldn't be able to call it")
 
 (defmacro defun/cc (&whole whole name arguments &body body &environment env)
+  (declare (ignore env))
   (bind (((:values body declarations doc-string) (parse-body body :documentation #t :whole whole)))
     (declare (ignore doc-string)) ; TODO
     `(progn
