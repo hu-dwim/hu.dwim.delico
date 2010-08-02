@@ -6,7 +6,7 @@
 
 (in-package :hu.dwim.delico.documentation)
 
-(def project :hu.dwim.delico :path (system-pathname :hu.dwim.delico))
+(def project :hu.dwim.delico)
 
 (def method make-project-tab-pages ((component project/detail/inspector) (project (eql (find-project :hu.dwim.delico))))
   (append (list (tab-page/widget (:selector (icon/widget switch-to-tab-page :label "User guide"))
