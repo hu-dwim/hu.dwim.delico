@@ -8,7 +8,7 @@
 
 (def constant +defun-stub-error-message+ "This is only a compile-time stub, normally you shouldn't be able to call it")
 
-(defmacro defun/cc (&whole whole name arguments &body body &environment env)
+(def (macro e) defun/cc (&whole whole name arguments &body body &environment env)
   (declare (ignore env))
   (bind (((:values body declarations doc-string) (parse-body body :documentation #t :whole whole)))
     (declare (ignore doc-string)) ; TODO
@@ -27,7 +27,7 @@
                                   )))
          ',name))))
 
-(defmacro defgeneric/cc (name args &rest options)
+(def (macro e) defgeneric/cc (name args &rest options)
   "Trivial wrapper around defgeneric designed to alert readers that these methods are cc methods."
   (assert (not (find :method options :key #'first)) () "FIXME: defgeneric/cc does not walk the :method entries yet, use standalone defmethod/cc's for now")
   `(progn
@@ -37,9 +37,10 @@
      (eval-when (:compile-toplevel :load-toplevel :execute)
        (setf (fdefinition/cc ',name 'defmethod/cc) t))))
 
-; for emacs:  (setf (get 'defmethod/cc 'common-lisp-indent-function) 'lisp-indent-defmethod)
+;; TODO move it into an emacs/foo.el
+;; for emacs:  (setf (get 'defmethod/cc 'common-lisp-indent-function) 'lisp-indent-defmethod)
 
-(defmacro defmethod/cc (&whole whole &environment lexenv name &rest args)
+(def (macro e) defmethod/cc (&whole whole &environment lexenv name &rest args)
   (let ((qualifiers (list (if (and (symbolp (first args))
                                    (not (null (first args))))
                               (pop args)

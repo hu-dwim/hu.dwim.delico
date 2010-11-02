@@ -16,7 +16,7 @@
 ;;;; (which must be a symbol) the actual contiunation (a regular
 ;;;; common lisp function) is returned.
 
-(defvar *call/cc-returns* nil)
+(def (special-variable e) *call/cc-returns* #f)
 
 (def (function o) lookup (environment type name &key (error-p nil) (default-value nil))
   (loop
@@ -80,8 +80,8 @@ Within the code of BODY almost all common lisp forms maintain their normal seman
                      (import-specials walked-form nil)
                      +toplevel-k+)))))
 
-(defun kall (k &optional (primary-value nil primary-value-p)
-               &rest other-values)
+(def (function e) kall (k &optional (primary-value nil primary-value-p)
+                          &rest other-values)
   "Continue the continuation K.
 
 This function can be used within the lexical scope of
@@ -95,8 +95,8 @@ semantics."
          (primary-value-p (funcall k primary-value))
          (t (funcall k nil)))))))
 
-(defvar *debug-evaluate/cc* nil
-  "When non NIL the evaluator will print, at each evaluation step, what it's evaluating and the value passed in from the previous step.
+(def (special-variable e) *debug-evaluate/cc* #f
+  "When true the evaluator will print, at each evaluation step, what it's evaluating and the value passed in from the previous step.
 
 If set to :FULL then at each step we print the form, the environment and the continuation. If set to T we just print the form being evaluated.")
 
@@ -110,7 +110,7 @@ If set to :FULL then at each step we print the form, the environment and the con
   (or (member name '(call/cc) :test #'eq)
       (call-next-layered-method)))
 
-(defmacro let/cc (k &body body)
+(def (macro e) let/cc (k &body body)
   `(call/cc (lambda (,k) ,@body)))
 
 (defmacro klambda ((&optional (value (gensym) valuep) (other-values (gensym) other-values-p))
@@ -129,7 +129,7 @@ If set to :FULL then at each step we print the form, the environment and the con
             ,@body)))))
 
 ;; TODO use a proper logging lib
-(defvar *trace-cc* nil
+(def (special-variable e) *trace-cc* #f
   "Variable which controls the tracing of WITH-CALL/CC code.
 
 When not NIL the interepreter will report what code it is

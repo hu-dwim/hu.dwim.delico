@@ -14,18 +14,5 @@
         :hu.dwim.syntax-sugar
         :hu.dwim.util
         :hu.dwim.walker)
-  (:export #:to-cps
-           #:with-call/cc
-           #:kall
-           #:call/cc
-           #:let/cc
-           #:*call/cc-returns*
-           #:invalid-return-from
-           #:unreachable-code
-           #:defun/cc
-           #:defgeneric/cc
-           #:defmethod/cc
-           #:fmakun-cc
-           #:*debug-evaluate/cc*
-           #:*trace-cc*)
+  (:export #:call/cc)
   (:readtable-setup (hu.dwim.util:enable-standard-hu.dwim-syntaxes)))
