@@ -12,6 +12,6 @@
         :hu.dwim.def
         :hu.dwim.defclass-star
         :hu.dwim.delico
+        :hu.dwim.presentation
         :hu.dwim.syntax-sugar
-        :hu.dwim.util
-        :hu.dwim.wui))
+        :hu.dwim.util))

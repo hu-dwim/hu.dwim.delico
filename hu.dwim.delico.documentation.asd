@@ -12,7 +12,7 @@
   :class hu.dwim.documentation-system
   :depends-on (:hu.dwim.delico.test
                :hu.dwim.walker.documentation
-               :hu.dwim.wui)
+               :hu.dwim.presentation)
   :components ((:module "documentation"
                 :components ((:file "delico" :depends-on ("package"))
                              (:file "package")))))
