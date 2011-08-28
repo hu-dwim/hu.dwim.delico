@@ -19,7 +19,7 @@
          (setf (fdefinition/cc ',name 'defun/cc)
                (make-closure/cc
                 (walk-form/delico '(lambda ,arguments
-                                    (declare ,@declarations)
+                                    ,@declarations
                                     (block ,name
                                       ,@body))
                                   ;; TODO for this the lexenv object should be writable into fasl's
