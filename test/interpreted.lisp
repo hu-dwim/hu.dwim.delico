@@ -13,6 +13,13 @@
 (def function eval-from-string (form-as-string)
   (eval (read-from-string form-as-string)))
 
+(def function k-contains-closure? (k)
+  (map/tree (lambda (el)
+              (when (typep el 'function)
+                (return-from k-contains-closure? #t)))
+            k)
+  #f)
+
 (def suite* (test/interpreted :in test))
 
 (def test test/interpreted/constant ()
@@ -445,18 +452,22 @@
              (with-call/cc/test
                ｢(load-time-value (list 1 2 3) t)｣))))
 
-#+unix
-(def test test/interpreted/macrolet-saves-closure-into-fasl-bug ()
-  (bind ((lisp-filename "/tmp/____macrolet-into-fasl-bug.lisp")
-         (fasl-filename "/tmp/____macrolet-into-fasl-bug.fasl"))
-    (unwind-protect
-         (progn
-           (write-string-into-file "(in-package :hu.dwim.delico.test)
-                                      (with-call/cc
-                                        (macrolet ((foo (x)
-                                                     `(+ 1 ,x)))
-                                          (foo 42)))"
-                                   lisp-filename :if-exists :supersede)
-           (is (not (nth-value 2 (compile-file lisp-filename :output-file fasl-filename)))))
-      (ignore-errors (delete-file lisp-filename))
-      (ignore-errors (delete-file fasl-filename)))))
+(def test test/interpreted/bug/macrolet-saves-closure-into-fasl ()
+  (with-temporary-files ((lisp-filename)
+                         (fasl-filename))
+    (write-string-into-file "(in-package :hu.dwim.delico.test)
+                               (with-call/cc
+                                 (macrolet ((foo (x)
+                                              `(+ 1 ,x)))
+                                   (foo 42)))"
+                            lisp-filename :if-exists :supersede)
+    (is (not (nth-value 2 (compile-file lisp-filename :output-file fasl-filename))))))
+
+(def test test/interpreted/bug/closure-in-k ()
+  (is (not (k-contains-closure? (eval '(with-call/cc
+                                        (let ((a (call/cc (lambda (k) k))))
+                                          (+ 5 a)))))))
+  (with-expected-failures
+    (is (not (k-contains-closure? (eval
+                                   '(with-call/cc
+                                     (+ 5 (call/cc (lambda (k) k))))))))))

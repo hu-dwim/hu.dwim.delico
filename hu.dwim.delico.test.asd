@@ -13,7 +13,8 @@
   :depends-on (:hu.dwim.def
                :hu.dwim.delico
                :hu.dwim.stefil+hu.dwim.def+swank
-               :hu.dwim.util)
+               :hu.dwim.util
+               :hu.dwim.util.temporary-files)
   :components ((:module "test"
                 :components ((:file "interpreted" :depends-on ("suite"))
                              (:file "package")
