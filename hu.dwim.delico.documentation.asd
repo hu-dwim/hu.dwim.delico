@@ -4,12 +4,9 @@
 ;;;
 ;;; See LICENCE for details.
 
-(load-system :hu.dwim.asdf)
-
-(in-package :hu.dwim.asdf)
-
 (defsystem :hu.dwim.delico.documentation
-  :class hu.dwim.documentation-system
+  :defsystem-depends-on (:hu.dwim.asdf)
+  :class "hu.dwim.asdf:hu.dwim.documentation-system"
   :depends-on (:hu.dwim.delico.test
                :hu.dwim.walker.documentation
                :hu.dwim.presentation)

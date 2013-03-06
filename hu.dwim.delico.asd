@@ -4,12 +4,9 @@
 ;;;
 ;;; See LICENCE for details.
 
-(load-system :hu.dwim.asdf)
-
-(in-package :hu.dwim.asdf)
-
 (defsystem :hu.dwim.delico
-  :class hu.dwim.system
+  :defsystem-depends-on (:hu.dwim.asdf)
+  :class "hu.dwim.asdf:hu.dwim.system"
   :author ("Attila Lendvai <attila.lendvai@gmail.com>"
            "Levente Mészáros <levente.meszaros@gmail.com>")
   :description "Delimited, interpreted shift-reset continuation."
