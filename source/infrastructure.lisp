@@ -21,7 +21,7 @@
 (def (function e) (setf fdefinition/cc) (closure-object function-name &optional (type 'defun/cc))
   (setf (gethash function-name *cc-functions*) (list closure-object type)))
 
-(def layered-method hu.dwim.walker::handle-undefined-reference :in delico (type name)
+(def layered-method hu.dwim.walker::handle-undefined-reference :in delico (type name &key &allow-other-keys)
   (unless (member name '(call/cc))
     (call-next-layered-method)))
 
