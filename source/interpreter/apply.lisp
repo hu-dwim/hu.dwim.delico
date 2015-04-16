@@ -20,7 +20,7 @@
   (declare (ignore dyn-env))
   (kontinue k (lookup lex-env :flet (name-of node) :error-p t)))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
+(eval-always
   ;; needed to appease ACL 9.0, possibly other implementations too.
   (closer-mop:finalize-inheritance (find-class 'standard-object)))
 
