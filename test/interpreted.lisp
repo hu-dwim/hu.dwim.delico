@@ -2,16 +2,20 @@
 
 (in-package :hu.dwim.delico.test)
 
+(def macro with-delico-test-compile-time-env (&body body)
+  `(bind ((*package* (find-package :hu.dwim.delico.test)))
+     (hu.dwim.def:setup-readtable/same-as-package :hu.dwim.delico.test)
+     ,@body))
+
 (def macro with-call/cc/test (&body form-as-string)
   (assert (length= 1 form-as-string)) ; &body for indenting only...
   `(eval
-    (bind ((*package* (find-package :hu.dwim.delico.test))
-           ;; TODO (*readtable* ())
-           )
+    (with-delico-test-compile-time-env
       (read-from-string (string+ "(with-call/cc " ,(first form-as-string) ")")))))
 
 (def function eval-from-string (form-as-string)
-  (eval (read-from-string form-as-string)))
+  (with-delico-test-compile-time-env
+    (eval (read-from-string form-as-string))))
 
 (def function k-contains-closure? (k)
   (map/tree (lambda (el)
