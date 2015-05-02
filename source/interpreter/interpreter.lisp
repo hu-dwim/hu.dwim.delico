@@ -85,8 +85,7 @@ Within the code of BODY almost all common lisp forms maintain their normal seman
   "Continue the continuation K.
 
 This function can be used within the lexical scope of
-with-call/cc and outside, though it has slightly different
-semantics."
+with-call/cc and outside."
   (drive-interpreter/cc
    (lambda ()
      (let ((k (apply (car k) (cdr k))))

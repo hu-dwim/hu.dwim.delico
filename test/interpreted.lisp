@@ -475,3 +475,17 @@
     (is (not (k-contains-closure? (eval
                                    '(with-call/cc
                                      (+ 5 (call/cc (lambda (k) k))))))))))
+
+(def test test/interpreted/kall ()
+  (is (= 42 (with-call/cc/test
+              ｢(let ((x 21))
+                 (let/cc k
+                   (+ (kall k) (kall k)))
+                 x)｣)))
+  (is (= 42 (with-call/cc/test
+              ｢(let ((x 21))
+                 (let/cc k
+                   (+ (kall k)
+                      (let/cc k
+                        (kall k x))))
+                 x)｣))))

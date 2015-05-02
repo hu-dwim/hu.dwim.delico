@@ -66,13 +66,6 @@
                                    :source (source-of node))
                     lex-env dyn-env `(k-for-call/cc ,k)))
 
-      ((eql 'kall operator)
-       (evaluate-arguments-then-apply (lambda (args)
-                                        (trace-statement "KALL'ing ~S on ~S" (first args) (rest args))
-                                        (apply #'kontinue (first args) (cdr args)))
-                                      arguments '()
-                                      lex-env dyn-env))
-
       ((and (eql 'call-next-method operator)
             (nth-value 1 (lookup lex-env :next-method t)))
        (aif (lookup lex-env :next-method t)
