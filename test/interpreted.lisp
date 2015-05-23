@@ -245,7 +245,7 @@
   (is (= 1 (with-call/cc/test ｢(setf (test-funcall.0) 1)｣)))
   (is (= 2 (with-call/cc/test ｢(funcall #'(setf test-funcall.0) 2)｣))))
 
-(def test test/interpreted/lambda-requried-arguments ()
+(def test test/interpreted/lambda-required-arguments ()
   (with-call/cc/test
     ｢(is (eql t (funcall (lambda () t))))
      (is (eql t (funcall (lambda (x) x) t)))｣)
