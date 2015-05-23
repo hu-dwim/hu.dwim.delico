@@ -241,7 +241,11 @@
    ;; arguments then we can't have anything left in the arguments
    ;; list.
    nil
-   (register lex-env :let (name-of (first remaining-parameters)) value)
+   (let* ((parameter (first remaining-parameters))
+          (env (register lex-env :let (name-of parameter) value)))
+     (if (supplied-p-parameter-name-of parameter)
+         (register env :let (supplied-p-parameter-name-of parameter) nil)
+         env))
    dyn-env
    k))
 
@@ -281,7 +285,11 @@
     (value)
   (apply-lambda/cc/keyword operator
                            (cdr remaining-parameters) remaining-arguments
-                           (register lex-env :let (name-of (first remaining-parameters)) value)
+                           (let* ((parameter (first remaining-parameters))
+                                  (env (register lex-env :let (name-of parameter) value)))
+                             (if (supplied-p-parameter-name-of parameter)
+                                 (register env :let (supplied-p-parameter-name-of parameter) nil)
+                                 env))
                            dyn-env
                            k))
 
