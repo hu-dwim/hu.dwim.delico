@@ -11,7 +11,7 @@
                :hu.dwim.delico
                :hu.dwim.stefil+hu.dwim.def+swank
                :hu.dwim.util
-               :hu.dwim.util.temporary-files)
+               :hu.dwim.util/temporary-files)
   :components ((:module "test"
                 :components ((:file "interpreted" :depends-on ("suite"))
                              (:file "package")
