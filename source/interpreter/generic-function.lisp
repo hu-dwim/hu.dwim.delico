@@ -13,6 +13,7 @@
   (bind (((:values body declarations doc-string) (parse-body body :documentation #t :whole whole)))
     (declare (ignore doc-string)) ; TODO
     `(progn
+       #+(or) ;; AFAIR, the role of this was to avoid some warnings, but it got bitrotten
        (eval-when (:compile-toplevel)
          #*((:sbcl (sb-c:%compiler-defun ',name nil t))))
        (eval-when (:load-toplevel :execute)
