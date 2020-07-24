@@ -6,7 +6,7 @@
 
 (in-package :hu.dwim.def)
 
-(def package :hu.dwim.delico.test
+(def package :hu.dwim.delico/test
   (:use :hu.dwim.common
         :hu.dwim.def
         :hu.dwim.delico

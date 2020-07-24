@@ -4,6 +4,6 @@
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :hu.dwim.delico.test)
+(in-package :hu.dwim.delico/test)
 
 (defsuite* (test :in root-suite))

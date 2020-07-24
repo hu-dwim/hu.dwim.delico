@@ -1,10 +1,10 @@
 ;;;; -*- lisp -*-
 
-(in-package :hu.dwim.delico.test)
+(in-package :hu.dwim.delico/test)
 
 (def macro with-delico-test-compile-time-env (&body body)
-  `(bind ((*package* (find-package :hu.dwim.delico.test)))
-     (hu.dwim.def:setup-readtable/same-as-package :hu.dwim.delico.test)
+  `(bind ((*package* (find-package :hu.dwim.delico/test)))
+     (hu.dwim.def:setup-readtable/same-as-package :hu.dwim.delico/test)
      ,@body))
 
 (def macro with-call/cc/test (&body form-as-string)
@@ -480,7 +480,7 @@
 (def test test/interpreted/bug/macrolet-saves-closure-into-fasl ()
   (with-temporary-files ((lisp-filename)
                          (fasl-filename))
-    (write-string-into-file "(in-package :hu.dwim.delico.test)
+    (write-string-into-file "(in-package :hu.dwim.delico/test)
                                (with-call/cc
                                  (macrolet ((foo (x)
                                               `(+ 1 ,x)))
